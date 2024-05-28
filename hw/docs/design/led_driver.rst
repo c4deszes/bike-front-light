@@ -138,9 +138,11 @@ Firstly the resistance of the feedback resistor sets the LED current.
 
     tld509x_vref = '300mV'
     tld509x_rsense = normalize_numeric(tld509x_vref) / normalize_numeric(i_led)
+    tld509x_psense = normalize_numeric(i_led) * normalize_numeric(i_led) * tld509x_rsense
 
     Latex("\\begin{gathered}"
           f"R_{{sense}} = \\frac{{V_{{ref}}}}{{I_{{out}}}} = {tld509x_rsense*1000:.01f}mΩ\\\\"
+          f"P_{{sense}} = {tld509x_psense*1000:.01f}mW\\\\"
           "\end{gathered}")
 
 ILD8150 design calculations
