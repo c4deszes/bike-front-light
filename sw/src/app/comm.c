@@ -9,6 +9,7 @@
 //#include "hal/dsu.h"
 #include "bsp/light_control.h"
 
+#include "app/tmon.h"
 #include "app/config.h"
 
 #include "common/swtimer.h"
@@ -147,11 +148,10 @@ void COMM_UpdateSignals(void) {
 
     // TODO: measure MCU temp. and return accordingly
     //LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+    LINE_Request_FrontLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 
 void COMM_UpdateDebugSignals(void) {
-    // TODO: copy x,y,z, sensor code, brake status
-    //LINE_Request_RearLightSensorDebug_data.fields.AccelerationX = BRAKE_GetAccelerationX();
-    //LINE_Request_RearLightSensorDebug_data.fields.AccelerationY = BRAKE_GetAccelerationY();
-    //LINE_Request_RearLightSensorDebug_data.fields.AccelerationZ = BRAKE_GetAccelerationZ();
+    
+    LINE_Request_FrontLightDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(TMON_DriveTemperature);
 }

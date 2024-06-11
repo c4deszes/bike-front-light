@@ -11,6 +11,7 @@
 #include "app/strobe.h"
 #include "app/brightness.h"
 #include "app/sys_state.h"
+#include "app/tmon.h"
 
 #include <stddef.h>
 
@@ -39,6 +40,8 @@ void APP_Initialize() {
     SYSSTATE_Init();
     BRIGHTNESS_Init();
     STROBE_Init();
+
+    TMON_Init();
 
     // Initializing communication
     COMM_Initialize();

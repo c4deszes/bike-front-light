@@ -93,10 +93,6 @@ void BSP_ClockInitialize (void) {
                                 MCLK_APBCMASK_EVSYS_Msk;
 }
 
-void BSP_TempSensor_Init() {
-
-}
-
 void BSP_Button_Init() {
 
 }

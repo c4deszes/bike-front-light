@@ -41,12 +41,14 @@ add_executable(
     EXCLUDE_FROM_ALL
 
     src/app/brightness.c
+    src/app/button.c
     src/app/comm.c
     src/app/init.c
     src/app/main.c
     src/app/strobe.c
     src/app/sys_state.c
     src/app/tasks.c
+    src/app/tmon.c
 
     src/bsp/board.c
     $<$<STREQUAL:${BOARD_LED_DRIVER},ILD8150>:src/bsp/led_driver_ild8150.c>

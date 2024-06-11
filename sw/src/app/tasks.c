@@ -7,6 +7,8 @@
 #include "app/brightness.h"
 #include "app/strobe.h"
 #include "app/sys_state.h"
+#include "app/tmon.h"
+
 #include "bsp/light_control.h"
 
 #include "line_api.h"
@@ -44,9 +46,9 @@ void SCH_Task10ms_A(void) {
     //WDT_Acknowledge();
 
     COMM_UpdateSignals();
-
-    // TODO: only do if debugging is enabled
     COMM_UpdateDebugSignals();
 
     LIGHTCONTROL_Update10ms();
+
+    TMON_Update100ms();
 }
