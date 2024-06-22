@@ -12,6 +12,7 @@
 #include "app/brightness.h"
 #include "app/sys_state.h"
 #include "app/tmon.h"
+#include "app/button.h"
 
 #include <stddef.h>
 
@@ -35,6 +36,7 @@ void APP_Initialize() {
     //WDT_InitializeNormal(&wdt_config);
     //EIC_Initialize(NULL);
     LIGHTCONTROL_Init();
+    BUTTON_Init();
 
     // Initializing application services
     SYSSTATE_Init();

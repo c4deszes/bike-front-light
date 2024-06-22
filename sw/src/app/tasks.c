@@ -8,6 +8,7 @@
 #include "app/strobe.h"
 #include "app/sys_state.h"
 #include "app/tmon.h"
+#include "app/button.h"
 
 #include "bsp/light_control.h"
 
@@ -41,6 +42,8 @@ void SCH_Task10ms_A(void) {
     SYSSTATE_Update10ms();
 
     BRIGHTNESS_Update10ms();
+
+    BUTTON_Update10ms();
 
     // TODO: enable watchdog
     //WDT_Acknowledge();

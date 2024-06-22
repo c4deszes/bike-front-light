@@ -23,7 +23,7 @@
 /* Strobe light settings */
 // TODO: should emergency mode use different values? usually there the brightness is low
 //       alternatively this could be a ratio instead of offset (e.g.: 1.0 -> CurrentTarget, 0.5 -> 50% of the target)
-#define CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET 1000
+#define CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET 700
 #define CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET 0          // note: when disabled high offset is constantly applied, so it should be 0 for most cases
 
 // Single strobe frequency: 30Hz

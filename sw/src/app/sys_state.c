@@ -11,6 +11,8 @@
 //#include "bl/api.h"
 #include "sam.h"
 
+#include "app/button.h"
+
 typedef enum {
     sys_state_init,         /* When starting up */
     sys_state_normal,       /* When target signal is valid */
@@ -44,69 +46,66 @@ void SYSSTATE_Update10ms(void) {
     if (sys_state == sys_state_init && SWTIMER_Elapsed(sys_transition_timer)) {
         // transition into safety or normal
 
-        if (COMM_LightRequestTimeout()) {
-            sys_state = sys_state_safety;
-        }
-        else if (COMM_BootRequest()) {
-            sys_state = sys_state_goto_boot;
-        }
-        else {
+        // if (COMM_LightRequestTimeout()) {
+        //     sys_state = sys_state_safety;
+        // }
+        // else if (COMM_BootRequest()) {
+        //     sys_state = sys_state_goto_boot;
+        // }
+        // else {
             sys_state = sys_state_normal;
-        }
+        //}
     }
     else if (sys_state == sys_state_normal) {
-        uint8_t light_behavior = COMM_LightBehavior();
-        if (light_behavior == LINE_ENCODER_LightBehaviorEncoder_Default) {
-            STROBE_SetSource(STROBE_ConvertSource(CONFIG_DEFAULT_STROBE_SOURCE));
-        }
-        else if (light_behavior == LINE_ENCODER_LightBehaviorEncoder_Blink) {
-            STROBE_SetSource(STROBE_ConvertSource(CONFIG_PRIMARY_STROBE_SOURCE));
-        }
-        else {
+        if (BUTTON_CycleCounter == 0) {
+            BRIGHTNESS_SetMode(brightness_mode_off);
+            BRIGHTNESS_SetTarget(0);
             STROBE_SetSource(strobe_source_disabled);
         }
-
-        uint8_t light_mode = COMM_LightMode();
-        if (light_mode == LINE_ENCODER_LightModeEncoder_Adaptive) {
+        else if (BUTTON_CycleCounter == 1) {
+            BRIGHTNESS_SetMode(brightness_mode_max);
+            BRIGHTNESS_SetTarget(1000);
+            STROBE_SetSource(strobe_source_disabled);
+        }
+        else if (BUTTON_CycleCounter == 2) {
             BRIGHTNESS_SetMode(brightness_mode_adaptive);
+            BRIGHTNESS_SetTarget(800);
+            STROBE_SetSource(strobe_source_disabled);
         }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Standard) {
-            BRIGHTNESS_SetMode(brightness_mode_standard);
+        else if (BUTTON_CycleCounter == 3) {
+            BRIGHTNESS_SetMode(brightness_mode_adaptive);
+            BRIGHTNESS_SetTarget(500);
+            STROBE_SetSource(strobe_source_disabled);
         }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Emergency) {
-            BRIGHTNESS_SetMode(brightness_mode_emergency);
+        else if (BUTTON_CycleCounter == 4) {
+            BRIGHTNESS_SetMode(brightness_mode_adaptive);
+            BRIGHTNESS_SetTarget(200);
+            STROBE_SetSource(strobe_source_disabled);
         }
-        else if (light_mode == LINE_ENCODER_LightModeEncoder_Off) {
-            BRIGHTNESS_SetMode(brightness_mode_off);
+        else if (BUTTON_CycleCounter == 5) {
+            BRIGHTNESS_SetMode(brightness_mode_adaptive);
+            BRIGHTNESS_SetTarget(1000);
+            STROBE_SetSource(strobe_source_internal_single);
         }
         else {
-            BRIGHTNESS_SetMode(brightness_mode_standard);
-        }
-
-        BRIGHTNESS_SetTarget(COMM_GetTargetBrightness());
-
-        if (COMM_LightRequestTimeout() && COMM_LightMode() != LINE_ENCODER_LightModeEncoder_Emergency) {
-            /* If the master's last instruction was emergency mode then we don't transition out  */
-            sys_state = sys_state_safety;
-        }
-        else if (COMM_BootRequest()) {
-            sys_state = sys_state_goto_boot;
+            BRIGHTNESS_SetMode(brightness_mode_max);
+            BRIGHTNESS_SetTarget(1000);
         }
     }
-    else if (sys_state == sys_state_safety) {
-        STROBE_SetSource(STROBE_ConvertSource(CONFIG_SAFETY_STROBE_SOURCE));
-        BRIGHTNESS_SetMode(brightness_mode_safety);
+    // else if (sys_state == sys_state_safety) {
+    //     STROBE_SetSource(STROBE_ConvertSource(CONFIG_SAFETY_STROBE_SOURCE));
+    //     BRIGHTNESS_SetMode(brightness_mode_safety);
 
-        if (!COMM_LightRequestTimeout()) {
-            sys_state = sys_state_normal;
-        }
-        else if (COMM_BootRequest()) {
-            sys_state = sys_state_goto_boot;
-        }
-    }
-    // TODO: go to boot state, self reset
-    else if (sys_state == sys_state_goto_boot) {
-        SYSSTATE_BootEntry();
-    }
+    //     if (!COMM_LightRequestTimeout()) {
+    //         sys_state = sys_state_normal;
+    //     }
+    //     else if (COMM_BootRequest()) {
+    //         sys_state = sys_state_goto_boot;
+    //     }
+    // }
+    // // TODO: go to boot state, self reset
+    // else if (sys_state == sys_state_goto_boot) {
+    //     SYSSTATE_BootEntry();
+    // }
 }
 
