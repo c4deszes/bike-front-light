@@ -1225,6 +1225,9 @@
     )
   )
 
+  (junction (at 231.775 72.39) (diameter 0) (color 0 0 0 0)
+    (uuid 04eb2f40-3172-4659-a6c4-dbdee254d432)
+  )
   (junction (at 70.485 47.625) (diameter 0) (color 0 0 0 0)
     (uuid 0e759d51-86d7-4537-aaaf-71dac3d49f90)
   )
@@ -1263,9 +1266,6 @@
   )
   (junction (at 76.835 106.68) (diameter 0) (color 0 0 0 0)
     (uuid 8e90f1ff-53ab-4a7f-96b9-7554492510ef)
-  )
-  (junction (at 232.41 72.39) (diameter 0) (color 0 0 0 0)
-    (uuid 9a83d60d-0bff-4f27-a146-868ae99621ca)
   )
   (junction (at 241.935 72.39) (diameter 0) (color 0 0 0 0)
     (uuid a1a601fd-48cc-4c49-bd21-f816045c161c)
@@ -1498,7 +1498,7 @@
     (stroke (width 0) (type default))
     (uuid 2f1f17df-1008-44e6-a1f2-e57c9fdd0d07)
   )
-  (wire (pts (xy 226.06 72.39) (xy 232.41 72.39))
+  (wire (pts (xy 226.06 72.39) (xy 231.775 72.39))
     (stroke (width 0) (type default))
     (uuid 2fe32be1-23cd-4527-9ffc-60017f811685)
   )
@@ -1535,10 +1535,6 @@
     (uuid 35b08cee-abc6-49b0-821c-b87530718f13)
   )
 
-  (wire (pts (xy 232.41 72.39) (xy 241.935 72.39))
-    (stroke (width 0) (type default))
-    (uuid 383fde7c-da51-4ccf-a01a-c3bf68f1bea7)
-  )
   (wire (pts (xy 245.745 80.01) (xy 245.745 83.82))
     (stroke (width 0) (type default))
     (uuid 3b4ec587-0eb1-49ed-b895-b7a8a984c1c3)
@@ -1572,7 +1568,7 @@
     (stroke (width 0) (type default))
     (uuid 456ee183-5f41-47e1-ae01-c6eb233cbfe9)
   )
-  (wire (pts (xy 232.41 82.55) (xy 232.41 83.82))
+  (wire (pts (xy 231.775 82.55) (xy 231.775 83.82))
     (stroke (width 0) (type default))
     (uuid 460456aa-f47b-461a-8107-98716dd614d2)
   )
@@ -1653,7 +1649,7 @@
     (uuid 5be55943-49f4-48b3-a112-ea6deda443b1)
   )
 
-  (wire (pts (xy 232.41 72.39) (xy 232.41 74.93))
+  (wire (pts (xy 231.775 72.39) (xy 231.775 74.93))
     (stroke (width 0) (type default))
     (uuid 5cac6d6f-3c4c-4ecc-a7c0-be41e6770b69)
   )
@@ -1905,6 +1901,11 @@
     (stroke (width 0) (type dash))
     (uuid b0b00d5b-77aa-4459-bbbf-ee3f8c2062ef)
   )
+
+  (wire (pts (xy 231.775 72.39) (xy 241.935 72.39))
+    (stroke (width 0) (type default))
+    (uuid b1137737-dc72-4783-8b41-070ca179719f)
+  )
   (polyline (pts (xy 206.375 37.465) (xy 206.375 56.515))
     (stroke (width 0) (type dash_dot) (color 255 47 18 1))
     (uuid b4b44142-3b35-481f-92da-a02230390812)
@@ -1926,7 +1927,7 @@
     (stroke (width 0) (type default))
     (uuid ba2356c1-aa09-4ee1-a514-b62db2df20d1)
   )
-  (wire (pts (xy 232.41 83.82) (xy 241.935 83.82))
+  (wire (pts (xy 231.775 83.82) (xy 241.935 83.82))
     (stroke (width 0) (type default))
     (uuid ba82b2ad-045a-49cb-86a7-ad6e933dfda0)
   )
@@ -2140,11 +2141,15 @@
     (effects (font (size 1.27 1.27) (color 255 65 38 1)) (justify left bottom))
     (uuid 78cb1e43-3697-4d8f-a337-c2312497399d)
   )
+  (text "M05: LED Driver" (at 264.795 19.05 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 964572d6-4817-434a-977f-7a197ab9bd4b)
+  )
   (text "M02: Power conditioning\nM03: Communication" (at 132.715 19.685 0)
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid 996c782a-0a53-4762-978d-eb4b9b4ce177)
   )
-  (text "keep D201,D301 close to connector" (at 38.735 63.5 0)
+  (text "keep D200,D300 close to connector" (at 38.735 63.5 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 9dc22f35-54f7-4c07-8703-d27ebcef913e)
   )
@@ -2160,15 +2165,15 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid c9b6d95d-73be-48c6-8299-20e88dc5c5e0)
   )
-  (text "keep C17 close to VDDCORE pin of U6" (at 39.37 186.69 0)
+  (text "keep C405 close to VDDCORE pin of U6" (at 39.37 186.69 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid d0528353-9cf0-4d7c-bfab-a7b372287677)
   )
-  (text "keep C303 close to VBB\nkeep C304 close to VREG" (at 106.68 63.5 0)
+  (text "keep C300 close to VBB\nkeep C301 close to VREG" (at 106.68 63.5 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid d0dd4b16-e036-402e-9b89-ae428a7323be)
   )
-  (text "keep C13,C15 close to VDDANA pin of U6" (at 39.37 184.15 0)
+  (text "keep C401,C402 close to VDDANA pin of U6" (at 39.37 184.15 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e1563e5e-557f-4b48-ab3b-3ee156e62939)
   )
@@ -2176,7 +2181,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid e32c6a04-0a8c-429a-b329-32b3d5023ead)
   )
-  (text "keep C10,C12 close to VDDIN pin of U6" (at 39.37 181.61 0)
+  (text "keep C403,C404 close to VDDIN pin of U6" (at 39.37 181.61 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid fa7f7d86-5b91-47a3-a329-7131e63960b4)
   )
@@ -2321,7 +2326,7 @@
     (effects (font (size 1.27 1.27)) (justify right bottom))
     (uuid e702e2bb-6ec2-4e7c-8c2c-afe207986ed6)
   )
-  (label "ILD8150_LED_P" (at 232.41 72.39 0) (fields_autoplaced)
+  (label "ILD8150_LED_P" (at 231.775 72.39 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid ea0262cd-57a5-4576-994a-ea659d14c715)
   )
@@ -2333,7 +2338,7 @@
   (symbol (lib_id "Device:D_Schottky") (at 217.17 78.74 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 00f63d90-138f-4d69-9700-2ca5ecb01f10)
-    (property "Reference" "D200" (at 220.345 76.2 90)
+    (property "Reference" "D200" (at 219.71 74.93 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "SS34F-DC" (at 214.63 78.74 0)
@@ -2355,7 +2360,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "D7") (unit 1)
+          (reference "D501") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -2393,7 +2398,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U5") (unit 3)
+          (reference "U100") (unit 3)
         )
       )
       (project "rotor-sensor"
@@ -2431,7 +2436,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U5") (unit 2)
+          (reference "U100") (unit 2)
         )
       )
       (project "rotor-sensor"
@@ -2480,10 +2485,10 @@
   (symbol (lib_id "Device:L") (at 222.25 72.39 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 0cd68f9c-f743-4e11-b073-d94f9bd89cc5)
-    (property "Reference" "L2" (at 220.345 69.85 90)
+    (property "Reference" "L500" (at 220.345 69.85 90)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "22u" (at 224.79 69.85 90)
+    (property "Value" "22u" (at 226.06 69.85 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "local:ASPI-6045" (at 222.25 72.39 0)
@@ -2497,7 +2502,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "L2") (unit 1)
+          (reference "L500") (unit 1)
         )
       )
     )
@@ -2551,7 +2556,7 @@
   (symbol (lib_id "Connector_Generic:Conn_02x01") (at 256.54 72.39 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 0f0a2a51-5a9b-4fc8-a05e-ec1dd2688ab3)
-    (property "Reference" "J3" (at 256.54 69.85 0)
+    (property "Reference" "J500" (at 256.54 69.85 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Conn_02x01" (at 257.81 69.215 0)
@@ -2568,7 +2573,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "J3") (unit 1)
+          (reference "J500") (unit 1)
         )
       )
     )
@@ -2672,7 +2677,7 @@
   (symbol (lib_id "Device:R") (at 179.705 66.675 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 1f7c8433-31d3-4f20-bbe8-a311b858bbed)
-    (property "Reference" "R403" (at 176.53 65.405 0)
+    (property "Reference" "R403" (at 175.895 65.405 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 176.53 67.945 0)
@@ -2707,7 +2712,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R23") (unit 1)
+          (reference "R504") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -2759,7 +2764,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C7") (unit 1)
+          (reference "C402") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -2842,7 +2847,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U5") (unit 1)
+          (reference "U100") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -2894,7 +2899,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C5") (unit 1)
+          (reference "C505") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -2977,7 +2982,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U5") (unit 4)
+          (reference "U100") (unit 4)
         )
       )
       (project "rotor-sensor"
@@ -3033,19 +3038,19 @@
     )
   )
 
-  (symbol (lib_id "power:GND") (at 156.21 64.135 0) (unit 1)
+  (symbol (lib_id "power:GND") (at 164.465 47.625 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 34a581da-007b-4f77-92c4-71b68ccaeb09)
-    (property "Reference" "#PWR021" (at 156.21 70.485 0)
+    (property "Reference" "#PWR021" (at 164.465 53.975 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "GND" (at 158.75 67.31 0)
+    (property "Value" "GND" (at 167.005 50.8 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 156.21 64.135 0)
+    (property "Footprint" "" (at 164.465 47.625 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 156.21 64.135 0)
+    (property "Datasheet" "" (at 164.465 47.625 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 7ebb8549-211a-43ba-be61-8246eb531d8e))
@@ -3109,7 +3114,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C11") (unit 1)
+          (reference "C502") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3158,10 +3163,10 @@
   (symbol (lib_id "Device:L") (at 52.705 132.08 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 3a010a9c-2106-460a-a6f0-88d067bb372c)
-    (property "Reference" "L1" (at 50.8 130.175 90)
+    (property "Reference" "L1" (at 51.435 130.175 90)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "10uH" (at 55.88 130.175 90)
+    (property "Value" "10uH" (at 57.15 130.175 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "Inductor_SMD:L_0805_2012Metric" (at 52.705 132.08 0)
@@ -3190,7 +3195,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "L1") (unit 1)
+          (reference "L400") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3232,7 +3237,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C14") (unit 1)
+          (reference "C301") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3276,7 +3281,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R5") (unit 1)
+          (reference "R300") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3290,7 +3295,7 @@
   (symbol (lib_id "Device:D_Schottky") (at 210.185 50.8 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 50fde254-9449-4f2b-9834-43ce1dae4ecb)
-    (property "Reference" "D200" (at 213.36 49.53 90)
+    (property "Reference" "D200" (at 215.265 49.53 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "BAS3005B02" (at 218.44 51.435 90)
@@ -3312,7 +3317,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "D2") (unit 1)
+          (reference "D500") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3391,7 +3396,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C15") (unit 1)
+          (reference "C303") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3432,25 +3437,25 @@
     )
   )
 
-  (symbol (lib_id "Device:C") (at 156.21 60.325 0) (mirror y) (unit 1)
+  (symbol (lib_id "Device:C") (at 164.465 43.815 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 598edf00-0a7d-40fe-87a0-68c4ef9962e6)
-    (property "Reference" "C14" (at 161.29 58.42 0)
+    (property "Reference" "C14" (at 169.545 41.91 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "100n" (at 161.925 60.325 0)
+    (property "Value" "100n" (at 170.18 43.815 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 155.2448 64.135 0)
+    (property "Footprint" "Capacitor_SMD:C_0402_1005Metric" (at 163.4998 47.625 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "~" (at 156.21 60.325 0)
+    (property "Datasheet" "~" (at 164.465 43.815 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Size" "0402" (at 156.21 60.325 0)
+    (property "Size" "0402" (at 164.465 43.815 0)
       (effects (font (size 0.6 0.6)))
     )
-    (property "Rating" "6.3V" (at 161.925 62.23 0)
+    (property "Rating" "6.3V" (at 170.18 45.72 0)
       (effects (font (size 1.27 1.27)))
     )
     (pin "1" (uuid 9ff29e84-80f5-4673-83d9-cca0456711dc))
@@ -3473,7 +3478,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C3") (unit 1)
+          (reference "C500") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3550,7 +3555,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U1") (unit 1)
+          (reference "U400") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3564,7 +3569,7 @@
   (symbol (lib_id "Device:R") (at 179.07 104.14 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 605f8387-ce76-40c6-8172-1be572a4035b)
-    (property "Reference" "R403" (at 182.245 102.87 0)
+    (property "Reference" "R403" (at 183.515 102.87 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "47k" (at 182.88 104.775 0)
@@ -3599,7 +3604,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R20") (unit 1)
+          (reference "R506") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3673,7 +3678,7 @@
   (symbol (lib_id "Device:R") (at 179.705 80.01 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 63446a51-f2bb-47eb-a704-2e29e13d9dc1)
-    (property "Reference" "R403" (at 176.53 78.74 0)
+    (property "Reference" "R403" (at 175.895 78.74 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 176.53 81.28 0)
@@ -3708,7 +3713,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R18") (unit 1)
+          (reference "R505") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3750,7 +3755,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C13") (unit 1)
+          (reference "C300") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3792,7 +3797,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C10") (unit 1)
+          (reference "C506") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3841,7 +3846,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R2") (unit 1)
+          (reference "R401") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -3853,12 +3858,12 @@
   )
 
   (symbol (lib_id "local:ILD8150") (at 193.04 71.12 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom yes) (on_board yes) (dnp no)
     (uuid 68f2afdf-9acd-4cb9-818b-56a7d3fb7ea8)
-    (property "Reference" "U3" (at 193.04 55.245 0)
+    (property "Reference" "U500" (at 189.23 58.42 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "ILD8150" (at 193.04 57.785 0)
+    (property "Value" "ILD8150" (at 198.755 83.82 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "Package_SO:Infineon_PG-DSO-8-27_3.9x4.9mm_EP2.65x3mm" (at 193.04 71.12 0)
@@ -3879,7 +3884,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U3") (unit 1)
+          (reference "U500") (unit 1)
         )
       )
     )
@@ -3888,7 +3893,7 @@
   (symbol (lib_id "Device:D_Schottky") (at 50.8 22.86 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6aa02f5b-a56d-4c80-a04a-dbe5833a57a7)
-    (property "Reference" "D200" (at 47.625 21.59 0)
+    (property "Reference" "D200" (at 50.8 20.32 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "SS34F-DC" (at 51.435 25.4 0)
@@ -3910,7 +3915,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "D8") (unit 1)
+          (reference "D200") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4370,7 +4375,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "J1") (unit 1)
+          (reference "J400") (unit 1)
         )
       )
     )
@@ -4452,7 +4457,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C8") (unit 1)
+          (reference "C405") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4586,7 +4591,7 @@
   (symbol (lib_id "Device:R") (at 179.07 114.3 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 948c17dd-9c03-4f45-a663-e74ad650ecec)
-    (property "Reference" "R403" (at 182.245 113.03 0)
+    (property "Reference" "R403" (at 183.515 113.03 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 182.88 114.935 0)
@@ -4621,7 +4626,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R21") (unit 1)
+          (reference "R507") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4750,7 +4755,7 @@
   (symbol (lib_id "Device:C") (at 56.515 160.02 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9dd0e0fb-e235-4222-910b-d004b455ab90)
-    (property "Reference" "C2" (at 60.96 158.75 0)
+    (property "Reference" "C2" (at 61.595 158.75 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "100n" (at 61.595 160.655 0)
@@ -4788,7 +4793,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C4") (unit 1)
+          (reference "C404") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4802,7 +4807,7 @@
   (symbol (lib_id "Device:Thermistor_NTC") (at 76.835 101.6 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9df6b116-ab4c-42b2-af60-30f52f630f9f)
-    (property "Reference" "TH1" (at 78.74 99.695 0)
+    (property "Reference" "TH400" (at 78.74 99.695 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "ERT-J0ER103J" (at 78.74 101.6 0)
@@ -4822,7 +4827,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "TH1") (unit 1)
+          (reference "TH400") (unit 1)
         )
       )
     )
@@ -4831,7 +4836,7 @@
   (symbol (lib_id "Device:C") (at 212.09 64.77 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b0555452-d3e6-4f89-98be-c80b82838932)
-    (property "Reference" "C14" (at 210.82 61.595 90)
+    (property "Reference" "C14" (at 210.185 61.595 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "22n" (at 215.265 61.595 90)
@@ -4869,7 +4874,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C2") (unit 1)
+          (reference "C503") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4921,7 +4926,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C1") (unit 1)
+          (reference "C403") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -4938,7 +4943,7 @@
     (property "Reference" "#PWR060" (at 182.88 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "VCCQ" (at 186.055 58.42 0)
+    (property "Value" "VCCQ" (at 182.88 57.15 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "" (at 182.88 60.96 0)
@@ -4992,19 +4997,19 @@
     )
   )
 
-  (symbol (lib_id "power:VCCQ") (at 156.21 56.515 0) (unit 1)
+  (symbol (lib_id "power:VCCQ") (at 164.465 40.005 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b5b85135-79a4-49b1-bc22-1eda7139851c)
-    (property "Reference" "#PWR050" (at 156.21 60.325 0)
+    (property "Reference" "#PWR050" (at 164.465 43.815 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "VCCQ" (at 159.385 53.975 0)
+    (property "Value" "VCCQ" (at 167.64 37.465 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 156.21 56.515 0)
+    (property "Footprint" "" (at 164.465 40.005 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "" (at 156.21 56.515 0)
+    (property "Datasheet" "" (at 164.465 40.005 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid d972605c-c172-40c4-b1be-e32da6852de1))
@@ -5017,25 +5022,25 @@
     )
   )
 
-  (symbol (lib_id "Device:C") (at 232.41 78.74 180) (unit 1)
+  (symbol (lib_id "Device:C") (at 231.775 78.74 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp yes)
     (uuid b82a5cb0-a538-420b-8195-5ab172e74379)
-    (property "Reference" "C303" (at 227.965 77.47 0)
+    (property "Reference" "C303" (at 226.695 77.47 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "2.2u" (at 227.965 79.375 0)
+    (property "Value" "2.2u" (at 227.33 79.375 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric" (at 231.4448 74.93 0)
+    (property "Footprint" "Capacitor_SMD:C_0805_2012Metric" (at 230.8098 74.93 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "~" (at 232.41 78.74 0)
+    (property "Datasheet" "~" (at 231.775 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Size" "0805" (at 232.41 78.74 0)
+    (property "Size" "0805" (at 231.775 78.74 0)
       (effects (font (size 0.5994 0.5994)))
     )
-    (property "Rating" "25V" (at 227.965 81.28 0)
+    (property "Rating" "25V" (at 227.33 81.28 0)
       (effects (font (size 1.27 1.27)))
     )
     (pin "1" (uuid 97837873-8206-4b1c-95a1-ddce5b7dd552))
@@ -5048,7 +5053,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C20") (unit 1)
+          (reference "C504") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5115,7 +5120,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "U4") (unit 1)
+          (reference "U300") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5129,7 +5134,7 @@
   (symbol (lib_id "Power_Protection:SP0502BAHT") (at 44.45 53.975 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid bca7372b-2dcf-4bd9-9480-0d193d3671f4)
-    (property "Reference" "D3" (at 50.165 52.705 0)
+    (property "Reference" "D300" (at 50.165 52.705 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "SDT23C15L02" (at 50.165 55.245 0)
@@ -5147,7 +5152,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "D3") (unit 1)
+          (reference "D300") (unit 1)
         )
       )
     )
@@ -5156,7 +5161,7 @@
   (symbol (lib_id "Device:R") (at 76.835 111.76 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid bf3522f0-02b0-421a-b513-da00e6c6827c)
-    (property "Reference" "R403" (at 80.01 110.49 0)
+    (property "Reference" "R403" (at 81.28 110.49 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 80.645 112.395 0)
@@ -5191,7 +5196,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R3") (unit 1)
+          (reference "R402") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5205,7 +5210,7 @@
   (symbol (lib_id "Device:R") (at 73.66 81.915 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid bf6c7ba4-5917-4123-bc40-23786cde298f)
-    (property "Reference" "R403" (at 76.835 80.645 0)
+    (property "Reference" "R403" (at 77.47 80.645 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "1k" (at 76.2 83.185 0)
@@ -5240,7 +5245,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R1") (unit 1)
+          (reference "R400") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5254,7 +5259,7 @@
   (symbol (lib_id "Device:R") (at 172.085 66.675 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid c0ae11d5-f1d7-42fd-826f-0c4ecb69fd31)
-    (property "Reference" "R403" (at 168.91 65.405 0)
+    (property "Reference" "R403" (at 168.275 65.405 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 168.91 67.945 0)
@@ -5289,7 +5294,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R22") (unit 1)
+          (reference "R502") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5416,9 +5421,9 @@
   )
 
   (symbol (lib_id "Device:C_Polarized_US") (at 186.055 45.72 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
+    (in_bom yes) (on_board yes) (dnp yes)
     (uuid d0a5b948-798c-4ada-952b-f5335a829832)
-    (property "Reference" "C17" (at 182.88 43.815 0)
+    (property "Reference" "C501" (at 183.515 43.815 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100u" (at 182.88 45.72 0)
@@ -5438,7 +5443,7 @@
     (instances
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C17") (unit 1)
+          (reference "C501") (unit 1)
         )
       )
     )
@@ -5522,7 +5527,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R4") (unit 1)
+          (reference "R301") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5609,7 +5614,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C12") (unit 1)
+          (reference "C302") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5661,7 +5666,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R15") (unit 1)
+          (reference "R500") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5675,7 +5680,7 @@
   (symbol (lib_id "Device:C") (at 58.42 116.84 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid e3ba2456-847f-4c15-b3cb-8fd68a549c7a)
-    (property "Reference" "C14" (at 62.23 115.57 0)
+    (property "Reference" "C14" (at 63.5 115.57 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "100n" (at 63.5 117.475 0)
@@ -5713,7 +5718,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C9") (unit 1)
+          (reference "C400") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -5877,7 +5882,7 @@
   (symbol (lib_id "Device:C") (at 57.785 137.16 0) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f027c961-cbef-444e-8ded-6c3f735f2e09)
-    (property "Reference" "C8" (at 53.34 135.89 0)
+    (property "Reference" "C8" (at 52.705 135.89 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10u" (at 53.34 137.795 0)
@@ -5915,7 +5920,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "C6") (unit 1)
+          (reference "C401") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -6004,10 +6009,10 @@
   (symbol (lib_id "Device:R") (at 212.725 88.265 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid fa1dbc2b-c825-4a42-9f83-0894142e998a)
-    (property "Reference" "R403" (at 211.455 91.44 90)
+    (property "Reference" "R403" (at 210.185 85.725 90)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Value" "1k" (at 215.265 91.44 90)
+    (property "Value" "1k" (at 215.265 85.725 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 212.725 90.043 90)
@@ -6039,7 +6044,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R19") (unit 1)
+          (reference "R501") (unit 1)
         )
       )
       (project "rotor-sensor"
@@ -6053,7 +6058,7 @@
   (symbol (lib_id "Device:R") (at 172.085 80.01 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid fd1cd081-9dba-4d84-aeee-27b8e5f14271)
-    (property "Reference" "R403" (at 168.91 78.74 0)
+    (property "Reference" "R403" (at 168.275 78.74 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10k" (at 168.91 81.28 0)
@@ -6088,7 +6093,7 @@
       )
       (project "controller"
         (path "/94615d9e-a801-4ac9-baef-5bcd4288bff4"
-          (reference "R7") (unit 1)
+          (reference "R503") (unit 1)
         )
       )
       (project "rotor-sensor"

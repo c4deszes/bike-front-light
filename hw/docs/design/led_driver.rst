@@ -52,7 +52,7 @@ Power series ICs.
       - SOIC-8 (w/ thermal pad)
       - Buck
       - 1.5A
-      - No
+      - Yes (limiting)
       - No
       - No
       - Yes
@@ -95,6 +95,16 @@ Power series ICs.
       - Yes
       - Yes (non-distinct)
       - Yes (non-distinct)
+      - Yes
+      - Yes
+
+    * - REFCOM RCD-24-0.70/VREF
+      - Through-Hole
+      - Buck
+      - 700mA
+      - No
+      - No
+      - No
       - Yes
       - Yes
 
