@@ -26,4 +26,6 @@ void LIGHTCONTROL_Update10ms(void);
  */
 void LIGHTCONTROL_SetBrightness(uint16_t brightness);
 
+lightcontrol_feature_state_t LIGHTCONTROL_GetMainBeamState(void);
+
 #endif // BSP_LIGHT_CONTROL_H_

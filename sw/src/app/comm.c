@@ -11,6 +11,7 @@
 
 #include "app/tmon.h"
 #include "app/config.h"
+#include "app/button.h"
 
 #include "common/swtimer.h"
 #include "common/ringbuffer.h"
@@ -81,7 +82,7 @@ void COMM_UpdatePhy(void) {
 }
 
 void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
-    const uint8_t fix = 69;
+    uint8_t fix = 69;
     USART_WriteData(&size, sizeof(uint8_t));
     // TODO: fix for skipped 3rd byte
     USART_WriteData(payload, 1);
@@ -91,14 +92,18 @@ void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checks
     USART_FlushOutput();
 }
 
+void LINE_Transport_WriteRequest(uint16_t request) {
+    return;
+}
+
 static bool comm_bootrequest = false;
 
 uint8_t FLASH_BL_EnterBoot(void) {
 
     // TODO: when do we reject boot entry requests?
-    comm_bootrequest = true;
+    //comm_bootrequest = true;
 
-    return FLASH_LINE_BOOT_ENTRY_SUCCESS;
+    return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
 }
 
 bool COMM_BootRequest(void) {
@@ -140,18 +145,15 @@ static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
 }
 
 void COMM_UpdateSignals(void) {
+    LINE_Request_FrontLightStatus_data.fields.ControlCycleCount = BUTTON_CycleCounter;
+
     // TODO: check errors in LightController, report off if disabled
-    //LINE_Request_RearLightStatus_data.fields.BrakeLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_brake_segment));
-    //LINE_Request_RearLightStatus_data.fields.TailLightStatus = COMM_EncodeLightStatus(LIGHTCONTROL_GetDiagnosticState(lightcontrol_feature_tail_segment));
-
-    //LINE_Request_RearLightStatus_data.fields.SignalLightStatus = LINE_ENCODER_LightStatusEncoder_Off;   // Not present on Gen1.0
-
-    // TODO: measure MCU temp. and return accordingly
-    //LINE_Request_RearLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = LINE_ENCODER_LightStatusEncoder_Ok;
     LINE_Request_FrontLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 
 void COMM_UpdateDebugSignals(void) {
-    
+        // TODO: measure MCU temp. and return accordingly
     LINE_Request_FrontLightDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(TMON_DriveTemperature);
+    LINE_Request_FrontLightDebug_data.fields.McuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
 }

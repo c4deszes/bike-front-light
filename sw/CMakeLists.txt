@@ -15,7 +15,7 @@ find_package(Python REQUIRED)
 include(tools/cmake/CPM.cmake)
 
 CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-support")
-CPMAddPackage("gh:c4deszes/bike-line-protocol#feature/python-tool-improvements")
+CPMAddPackage("gh:c4deszes/bike-line-protocol@0.1.0")
 CPMAddPackage("gh:c4deszes/bike-flash-tool#master")
 # CPMAddPackage("gh:c4deszes/samd21-line-bootloader#master")
 

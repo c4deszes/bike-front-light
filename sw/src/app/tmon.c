@@ -74,7 +74,3 @@ void TMON_Update100ms() {
         TMON_DriveTemperature = TMON_Calculate(adc_result);
     }
 }
-
-// int8_t TMON_GetTemperature() {
-//     return 0;
-// }

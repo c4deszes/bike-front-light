@@ -8,6 +8,8 @@
 
 #define FEATURE_COMM_LIGHTREQUEST_TIMEOUT 4000
 
+#define FEATURE_CONTROL_BUTTON_CYCLES 4
+
 /* --------------- Settings ------------------- */
 /* Brightness curve points */
 #define CONFIG_BRIGHTNESS_CURVE_CUTOFF_X 1

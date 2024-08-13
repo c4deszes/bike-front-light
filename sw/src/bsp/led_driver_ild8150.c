@@ -24,10 +24,11 @@ static swtimer_t* transition_timer;
 static enum {
     ild8150_state_startup,
     ild8150_state_enabled,
-    ild8150_state_drive,
-    ild8150_state_short,
-    ild8150_state_open
+    ild8150_state_drive
 } driver_state;
+
+static uint16_t vmon_voltage_raw;
+static uint16_t vmon_error_counter;
 
 static void LIGHTCONTROL_IO_Init() {
     /* Shutdown is Low active, by default disabling the element */
@@ -53,14 +54,7 @@ static void LIGHTCONTROL_Timer_Init() {
     pwm_channels[1].drv_inv = false;
 
     TCC_SetupNormalPwm(TCC2, LED_DRIVER_PWM_FREQUENCY - 1, pwm_channels);
-    //TCC2_REGS->TCC_EVCTRL = TCC_EVCTRL_MCEO1_Msk;
-    TCC2_REGS->TCC_INTENSET = TCC_INTENSET_MC1_Msk;
-    NVIC_EnableIRQ(TCC2_IRQn);
     TCC_Enable(TCC2);
-}
-
-void TCC2_Interrupt() {
-    ADC1_REGS->ADC_SWTRIG = ADC_SWTRIG_START_Msk | ADC_SWTRIG_FLUSH_Msk;
 }
 
 static void LIGHTCONTROL_Adc_Init() {
@@ -71,24 +65,11 @@ static void LIGHTCONTROL_Adc_Init() {
     ADC1_REGS->ADC_CALIB = ADC_CALIB_BIASCOMP(bias_comp) | ADC_CALIB_BIASREFBUF(bias_ref);
 
     ADC1_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC2;
-
-    ADC1_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_1;
-
+    ADC1_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_16;
     ADC1_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV64;
-    ADC1_REGS->ADC_CTRLC = ADC_CTRLC_RESSEL_10BIT;
+    ADC1_REGS->ADC_CTRLC = ADC_CTRLC_RESSEL_10BIT | ADC_CTRLC_FREERUN_Msk;
 
     ADC1_REGS->ADC_INPUTCTRL = ADC_INPUTCTRL_MUXNEG_GND | ADC_INPUTCTRL_MUXPOS_AIN11;
-
-    ADC1_REGS->ADC_INTENSET = ADC_INTENSET_RESRDY_Msk;
-    ADC1_REGS->ADC_EVCTRL = ADC_EVCTRL_STARTEI_Msk;
-
-    EVSYS_REGS->EVSYS_CHANNEL[0] = EVSYS_CHANNEL_EVGEN(EVENT_ID_GEN_TCC2_MC_1) |
-                                   EVSYS_CHANNEL_EDGSEL_BOTH_EDGES |
-                                   EVSYS_CHANNEL_PATH_ASYNCHRONOUS;
-
-    EVSYS_REGS->EVSYS_USER[EVENT_ID_USER_ADC1_START] = EVSYS_USER_CHANNEL(0);
-
-    NVIC_EnableIRQ(ADC1_IRQn);
 
     ADC1_REGS->ADC_CTRLA = ADC_CTRLA_ENABLE_Msk;
 
@@ -113,14 +94,6 @@ void LIGHTCONTROL_SetBrightness(uint16_t brightness) {
     set_brightness = brightness;
 }
 
-static volatile uint16_t vmon_voltage_raw;
-
-void ADC1_Handler() {
-    vmon_voltage_raw = ADC1_REGS->ADC_RESULT;
-
-    ADC1_REGS->ADC_INTFLAG = ADC_INTFLAG_Msk;
-}
-
 void LIGHTCONTROL_Update10ms(void) {
 
     if (SWTIMER_Elapsed(transition_timer)) {
@@ -132,7 +105,6 @@ void LIGHTCONTROL_Update10ms(void) {
             driver_state = ild8150_state_drive;
         }
     }
-    
 
     if (driver_state == ild8150_state_startup) {
         /* Disable driver */
@@ -162,15 +134,22 @@ void LIGHTCONTROL_Update10ms(void) {
             GPIO_EnableFunction(ILD8150_DIM_PORT, ILD8150_DIM_PIN, ILD8150_DIM_PINMUX);
         }
 
-        // TODO: monitor VMON
-        // if below window then short
-        // if above the window then open
-        // important -> vmon must be sampled at the right time
-    }
-    else if (driver_state == ild8150_state_open) {
+        if (set_brightness > LIGHTCONTROL_BRIGHTNESS_MIN) {
+            vmon_voltage_raw = ADC1_REGS->ADC_RESULT;
 
-    }
-    else if (driver_state == ild8150_state_short) {
+            if (vmon_voltage_raw >= LED_DRIVER_VMON_WINDOW_HIGH) {
+                vmon_error_counter++;
 
+                if (vmon_error_counter > LED_DRIVER_VMON_SAMPLE_COUNT) {
+                    
+                }
+            }
+            else if (vmon_voltage_raw <= LED_DRIVER_VMON_WINDOW_LOW) {
+                vmon_error_counter++;
+            }
+            else {
+                // TODO: slowly reduce error counter
+            }
+        }
     }
 }

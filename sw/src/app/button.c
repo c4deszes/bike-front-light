@@ -4,17 +4,17 @@
 #include <stdbool.h>
 
 #include "bsp/pinout.h"
+#include "app/config.h"
 
 #include "hal/gpio.h"
 
-bool BUTTON_LastState;
-bool BUTTON_State;
-uint8_t BUTTON_StateCounter;
+static bool BUTTON_LastState;
+static bool BUTTON_State;
+static uint8_t BUTTON_StateCounter;
 
 uint8_t BUTTON_CycleCounter;
 
 #define BUTTON_MINIMUM_SAMPLES 2
-#define BUTTON_CYCLES 6
 
 static const gpio_pin_input_configuration input = {
     .pull = PULLUP,
@@ -22,7 +22,6 @@ static const gpio_pin_input_configuration input = {
 };
 
 void BUTTON_Init() {
-    // Setup EIC
     GPIO_SetupPinInput(BOARD_BUTTON_PORT, BOARD_BUTTON_PIN, &input);
 
     BUTTON_State = false;
@@ -34,7 +33,7 @@ void BUTTON_Init() {
 void BUTTON_OnClick() {
     BUTTON_CycleCounter += 1;
 
-    if (BUTTON_CycleCounter >= BUTTON_CYCLES) {
+    if (BUTTON_CycleCounter >= FEATURE_CONTROL_BUTTON_CYCLES) {
         BUTTON_CycleCounter = 0;
     }
 }
@@ -66,8 +65,3 @@ void BUTTON_Update10ms() {
         BUTTON_LastState = false;
     }
 }
-
-// void EIC_Handler() {
-
-// }
-
