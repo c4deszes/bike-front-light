@@ -148,7 +148,8 @@ void COMM_UpdateSignals(void) {
     LINE_Request_FrontLightStatus_data.fields.ControlCycleCount = BUTTON_CycleCounter;
 
     // TODO: check errors in LightController, report off if disabled
-    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    lightcontrol_feature_state_t mainbeam = LIGHTCONTROL_GetMainBeamState();
+    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = COMM_EncodeLightStatus(mainbeam);
     LINE_Request_FrontLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 

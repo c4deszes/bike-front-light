@@ -29,6 +29,7 @@ static enum {
 
 static uint16_t vmon_voltage_raw;
 static uint16_t vmon_error_counter;
+static lightcontrol_feature_state_t main_beam_state;
 
 static void LIGHTCONTROL_IO_Init() {
     /* Shutdown is Low active, by default disabling the element */
@@ -65,9 +66,9 @@ static void LIGHTCONTROL_Adc_Init() {
     ADC1_REGS->ADC_CALIB = ADC_CALIB_BIASCOMP(bias_comp) | ADC_CALIB_BIASREFBUF(bias_ref);
 
     ADC1_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC2;
-    ADC1_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_16;
-    ADC1_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV64;
-    ADC1_REGS->ADC_CTRLC = ADC_CTRLC_RESSEL_10BIT | ADC_CTRLC_FREERUN_Msk;
+    ADC1_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_1;
+    ADC1_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV4;
+    ADC1_REGS->ADC_CTRLC = ADC_CTRLC_RESSEL_12BIT | ADC_CTRLC_FREERUN_Msk;
 
     ADC1_REGS->ADC_INPUTCTRL = ADC_INPUTCTRL_MUXNEG_GND | ADC_INPUTCTRL_MUXPOS_AIN11;
 
@@ -82,6 +83,10 @@ void LIGHTCONTROL_Init(void) {
     transition_timer = SWTIMER_Create();
     SWTIMER_Setup(transition_timer, LED_DRIVER_STARTUP_DELAY);
 
+    vmon_error_counter = 0;
+    vmon_voltage_raw = 0;
+    main_beam_state = lightcontrol_feature_state_off;
+
     LIGHTCONTROL_IO_Init();
     LIGHTCONTROL_Adc_Init();
     LIGHTCONTROL_Timer_Init();
@@ -92,6 +97,10 @@ void LIGHTCONTROL_SetBrightness(uint16_t brightness) {
     // TODO: check if PWM 0 and PWM 100% are achievable
 
     set_brightness = brightness;
+}
+
+lightcontrol_feature_state_t LIGHTCONTROL_GetMainBeamState(void) {
+    return main_beam_state;
 }
 
 void LIGHTCONTROL_Update10ms(void) {
@@ -122,6 +131,8 @@ void LIGHTCONTROL_Update10ms(void) {
             GPIO_PinWrite(ILD8150_SHUTDOWN_PORT, ILD8150_SHUTDOWN_PIN, LOW);
             GPIO_PinWrite(ILD8150_DIM_PORT, ILD8150_DIM_PIN, LOW);
             GPIO_DisableFunction(ILD8150_DIM_PORT, ILD8150_DIM_PIN);
+
+            main_beam_state = lightcontrol_feature_state_off;
         }
         else if (set_brightness >= LIGHTCONTROL_BRIGHTNESS_MAX) {
             GPIO_PinWrite(ILD8150_SHUTDOWN_PORT, ILD8150_SHUTDOWN_PIN, HIGH);
@@ -135,20 +146,26 @@ void LIGHTCONTROL_Update10ms(void) {
         }
 
         if (set_brightness > LIGHTCONTROL_BRIGHTNESS_MIN) {
-            vmon_voltage_raw = ADC1_REGS->ADC_RESULT;
-
-            if (vmon_voltage_raw >= LED_DRIVER_VMON_WINDOW_HIGH) {
-                vmon_error_counter++;
-
-                if (vmon_error_counter > LED_DRIVER_VMON_SAMPLE_COUNT) {
-                    
+            if ((ADC1_REGS->ADC_INTFLAG & ADC_INTFLAG_RESRDY_Msk) != 0) {
+                ADC1_REGS->ADC_INTFLAG = ADC_INTFLAG_RESRDY_Msk;
+                vmon_voltage_raw = ADC1_REGS->ADC_RESULT;
+            
+                if (vmon_voltage_raw >= LED_DRIVER_VMON_WINDOW_HIGH && vmon_error_counter < LED_DRIVER_VMON_SAMPLE_COUNT) {
+                    vmon_error_counter++;
                 }
-            }
-            else if (vmon_voltage_raw <= LED_DRIVER_VMON_WINDOW_LOW) {
-                vmon_error_counter++;
-            }
-            else {
-                // TODO: slowly reduce error counter
+                else if (vmon_voltage_raw <= LED_DRIVER_VMON_WINDOW_LOW && vmon_error_counter < LED_DRIVER_VMON_SAMPLE_COUNT) {
+                    vmon_error_counter++;
+                }
+                else if (vmon_error_counter > 0) {
+                    vmon_error_counter--;
+                }
+
+                if (vmon_error_counter >= LED_DRIVER_VMON_SAMPLE_COUNT) {
+                    main_beam_state = lightcontrol_feature_state_error;
+                }
+                else {
+                    main_beam_state = lightcontrol_feature_state_ok;
+                }
             }
         }
     }
