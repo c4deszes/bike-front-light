@@ -8,7 +8,7 @@
 
 #define FEATURE_COMM_LIGHTREQUEST_TIMEOUT 4000
 
-#define FEATURE_CONTROL_BUTTON_CYCLES 4
+#define FEATURE_CONTROL_BUTTON_CYCLES 10
 
 /* --------------- Settings ------------------- */
 /* Brightness curve points */
@@ -19,8 +19,8 @@
 
 /* Fixed brightness levels */
 #define CONFIG_BRIGHTNESS_STANDARD_MIN_LEVEL 100
-#define CONFIG_BRIGHTNESS_EMERGENCY_LEVEL 50
-#define CONFIG_BRIGHTNESS_SAFETY_LEVEL 200
+#define CONFIG_BRIGHTNESS_EMERGENCY_LEVEL 300
+#define CONFIG_BRIGHTNESS_SAFETY_LEVEL 500
 
 /* Strobe light settings */
 // TODO: should emergency mode use different values? usually there the brightness is low
