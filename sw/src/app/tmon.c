@@ -12,11 +12,10 @@ uint16_t TMON_DriveTemperatureRaw;
 
 static const uint16_t adcToTempTable[13] = {
     401, 547, 748, 1020, 1374, 1807, 2295, 2785, 3221, 3560, 3793, 3938, 4019
-}; 
+};
 
 static const int8_t tempTable[13] = {
-    -40, -30, -20, -10, 0, 10, 20, 30, 40, 50,
-    60, 70, 80
+    -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80
 };
 
 static int8_t TMON_Calculate(uint16_t adcValue) {
@@ -51,7 +50,7 @@ void TMON_Init() {
 
     ADC0_REGS->ADC_REFCTRL = ADC_REFCTRL_REFSEL_INTVCC2;
 
-    ADC0_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_8;
+    ADC0_REGS->ADC_AVGCTRL = ADC_AVGCTRL_SAMPLENUM_1;
 
     ADC0_REGS->ADC_CTRLB = ADC_CTRLB_PRESCALER_DIV4;
     ADC0_REGS->ADC_CTRLC = ADC_CTRLC_RESSEL_12BIT | ADC_CTRLC_FREERUN_Msk;

@@ -78,6 +78,7 @@ void BSP_ClockInitialize (void) {
     GCLK_Select(TCC2_GCLK_ID, 1);
     GCLK_Select(ADC0_GCLK_ID, 2);
     GCLK_Select(ADC1_GCLK_ID, 2);
+    GCLK_Select(DAC_GCLK_ID, 2);
     GCLK_Select(EVSYS_GCLK_ID_0, 2);
 
     // PM_SelectCpuDiv(PM_CPUSEL_CPUDIV_DIV1);
@@ -87,6 +88,7 @@ void BSP_ClockInitialize (void) {
 
     MCLK_REGS->MCLK_APBCMASK =  MCLK_APBCMASK_ADC0_Msk |
                                 MCLK_APBCMASK_ADC1_Msk |
+                                MCLK_APBCMASK_DAC_Msk |
                                 MCLK_APBCMASK_SERCOM3_Msk |
                                 MCLK_APBCMASK_TCC0_Msk |
                                 MCLK_APBCMASK_TCC2_Msk;

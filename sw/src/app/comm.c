@@ -3,8 +3,8 @@
 
 #include "line_protocol.h"
 #include "line_api.h"
-#include "flash_line_api.h"
-#include "flash_line_diag.h"
+//#include "flash_line_api.h"
+//#include "flash_line_diag.h"
 //#include "bl/api.h"
 //#include "hal/dsu.h"
 #include "bsp/light_control.h"
@@ -21,8 +21,7 @@ RINGBUFFER_8(COMM_UsartBufferRx, 128);
 
 // TODO: data should be dynamic based on actual current figures 
 static LINE_Diag_PowerStatus_t power_status = {
-    .U_status = LINE_DIAG_POWER_STATUS_VOLTAGE_OK,
-    .BOD_status = LINE_DIAG_POWER_STATUS_BOD_NONE,
+    .U_measured = LINE_DIAG_POWER_STATUS_VOLTAGE(12000),
     .I_operating = LINE_DIAG_POWER_STATUS_OP_CURRENT(100),
     .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
 };
@@ -37,31 +36,48 @@ static LINE_Diag_SoftwareVersion_t sw_version = {
 static swtimer_t* comm_lightrequest_timer;
 
 // TODO: support op. mode (error in case all drivers fail, warning if IMU or single segment fails)
-uint8_t LINE_Diag_GetOperationStatus(void) {
+uint8_t LINE_Diag_BicycleNetwork_FrontLight_GetOperationStatus(void) {
     return LINE_DIAG_OP_STATUS_OK;
 }
 
-LINE_Diag_PowerStatus_t* LINE_Diag_GetPowerStatus(void) {
+LINE_Diag_PowerStatus_t* LINE_Diag_BicycleNetwork_FrontLight_GetPowerStatus(void) {
     return &power_status;
 }
 
-uint32_t LINE_Diag_GetSerialNumber(void) {
+uint32_t LINE_Diag_BicycleNetwork_FrontLight_GetSerialNumber(void) {
     //return DSU_GetSerialNumber32();
     return 0xABCDEF01;
 }
 
-LINE_Diag_SoftwareVersion_t* LINE_Diag_GetSoftwareVersion(void) {
+LINE_Diag_SoftwareVersion_t* LINE_Diag_BicycleNetwork_FrontLight_GetSoftwareVersion(void) {
     return &sw_version;
 }
 
+void LINE_Diag_BicycleNetwork_FrontLight_OnWakeup(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnIdle(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnShutdown(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnConditionalChangeAddress(uint8_t old_address, uint8_t new_address) {
+    // nothing to do
+}
+
 void COMM_Initialize(void) {
-    USART_Initialize(LINE_NETWORK_BicycleNetwork1_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
+    USART_Initialize(LINE_NETWORK_BicycleNetwork_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
     USART_Enable();
 
-    LINE_Transport_Init(true);
+    //LINE_Transport_Init(true);
     LINE_App_Init();
-    LINE_Diag_SetAddress(LINE_NODE_FrontLight_DIAG_ADDRESS);
-    FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    //LINE_Diag_Init();
+    //LINE_Diag_SetAddress(LINE_NODE_FrontLight_DIAG_ADDRESS);
+    //FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
 
     comm_lightrequest_timer = SWTIMER_Create();
 }
@@ -70,18 +86,18 @@ void COMM_UpdatePhy(void) {
     uint8_t length = USART_Available();
     while (length > 0) {
         uint8_t data = USART_Read();
-        LINE_Transport_Receive(data);
+        LINE_Transport_Receive(0, data);
         length--;
     }
 
-    LINE_Transport_Update(1);
+    LINE_Transport_Update(0, 1);
 
     if (LINE_Request_LightSynchronization_flag() || LINE_Request_FrontLightSetting_flag()) {
         SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 }
 
-void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checksum) {
+void LINE_Transport_WriteResponse(uint8_t channel, uint8_t size, uint8_t* payload, uint8_t checksum) {
     uint8_t fix = 69;
     USART_WriteData(&size, sizeof(uint8_t));
     // TODO: fix for skipped 3rd byte
@@ -92,19 +108,19 @@ void LINE_Transport_WriteResponse(uint8_t size, uint8_t* payload, uint8_t checks
     USART_FlushOutput();
 }
 
-void LINE_Transport_WriteRequest(uint16_t request) {
+void LINE_Transport_WriteRequest(uint8_t channel, uint16_t request) {
     return;
 }
 
 static bool comm_bootrequest = false;
 
-uint8_t FLASH_BL_EnterBoot(void) {
+// uint8_t FLASH_BL_EnterBoot(void) {
 
-    // TODO: when do we reject boot entry requests?
-    //comm_bootrequest = true;
+//     // TODO: when do we reject boot entry requests?
+//     //comm_bootrequest = true;
 
-    return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
-}
+//     return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
+// }
 
 bool COMM_BootRequest(void) {
     return comm_bootrequest;
@@ -148,12 +164,13 @@ void COMM_UpdateSignals(void) {
     LINE_Request_FrontLightStatus_data.fields.ControlCycleCount = BUTTON_CycleCounter;
 
     // TODO: check errors in LightController, report off if disabled
-    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = LINE_ENCODER_LightStatusEncoder_Ok;
+    lightcontrol_feature_state_t mainbeam = LIGHTCONTROL_GetMainBeamState();
+    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = COMM_EncodeLightStatus(mainbeam);
     LINE_Request_FrontLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
 }
 
 void COMM_UpdateDebugSignals(void) {
-        // TODO: measure MCU temp. and return accordingly
-    LINE_Request_FrontLightDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(TMON_DriveTemperature);
-    LINE_Request_FrontLightDebug_data.fields.McuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+    // TODO: measure MCU temp. and return accordingly
+    LINE_Request_FrontLightTemperatureDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(TMON_DriveTemperature);
+    LINE_Request_FrontLightTemperatureDebug_data.fields.McuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
 }
