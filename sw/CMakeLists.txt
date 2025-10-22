@@ -15,10 +15,10 @@ find_package(Python REQUIRED)
 include(tools/cmake/CPM.cmake)
 
 CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-sercom-bugfix")
-CPMAddPackage("gh:c4deszes/bike-line-protocol#feature/multichannel-support")
+CPMAddPackage("gh:c4deszes/bike-line-protocol@0.3.0")
 #CPMAddPackage("gh:c4deszes/bike-flash-tool#master")
 # CPMAddPackage("gh:c4deszes/samd21-line-bootloader#master")
-CPMAddPackage("gh:c4deszes/bike-uds-tool@0.1.0")
+CPMAddPackage("gh:c4deszes/bike-uds-tool@0.2.0")
 
 # Test configuration
 enable_testing()

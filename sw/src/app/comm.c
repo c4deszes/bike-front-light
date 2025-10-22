@@ -21,8 +21,7 @@ RINGBUFFER_8(COMM_UsartBufferRx, 128);
 
 // TODO: data should be dynamic based on actual current figures 
 static LINE_Diag_PowerStatus_t power_status = {
-    .U_status = LINE_DIAG_POWER_STATUS_VOLTAGE_OK,
-    .BOD_status = LINE_DIAG_POWER_STATUS_BOD_NONE,
+    .U_measured = LINE_DIAG_POWER_STATUS_VOLTAGE(12000),
     .I_operating = LINE_DIAG_POWER_STATUS_OP_CURRENT(100),
     .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
 };
@@ -37,21 +36,37 @@ static LINE_Diag_SoftwareVersion_t sw_version = {
 static swtimer_t* comm_lightrequest_timer;
 
 // TODO: support op. mode (error in case all drivers fail, warning if IMU or single segment fails)
-uint8_t LINE_Diag_GetOperationStatus(void) {
+uint8_t LINE_Diag_BicycleNetwork_FrontLight_GetOperationStatus(void) {
     return LINE_DIAG_OP_STATUS_OK;
 }
 
-LINE_Diag_PowerStatus_t* LINE_Diag_GetPowerStatus(void) {
+LINE_Diag_PowerStatus_t* LINE_Diag_BicycleNetwork_FrontLight_GetPowerStatus(void) {
     return &power_status;
 }
 
-uint32_t LINE_Diag_GetSerialNumber(void) {
+uint32_t LINE_Diag_BicycleNetwork_FrontLight_GetSerialNumber(void) {
     //return DSU_GetSerialNumber32();
     return 0xABCDEF01;
 }
 
-LINE_Diag_SoftwareVersion_t* LINE_Diag_GetSoftwareVersion(void) {
+LINE_Diag_SoftwareVersion_t* LINE_Diag_BicycleNetwork_FrontLight_GetSoftwareVersion(void) {
     return &sw_version;
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnWakeup(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnIdle(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnShutdown(void) {
+    // nothing to do
+}
+
+void LINE_Diag_BicycleNetwork_FrontLight_OnConditionalChangeAddress(uint8_t old_address, uint8_t new_address) {
+    // nothing to do
 }
 
 void COMM_Initialize(void) {
