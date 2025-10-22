@@ -14,10 +14,11 @@ find_package(Python REQUIRED)
 
 include(tools/cmake/CPM.cmake)
 
-CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-support")
-CPMAddPackage("gh:c4deszes/bike-line-protocol@0.1.0")
-CPMAddPackage("gh:c4deszes/bike-flash-tool#master")
+CPMAddPackage("gh:c4deszes/samd21-hal#feature/atsamc21-sercom-bugfix")
+CPMAddPackage("gh:c4deszes/bike-line-protocol#feature/multichannel-support")
+#CPMAddPackage("gh:c4deszes/bike-flash-tool#master")
 # CPMAddPackage("gh:c4deszes/samd21-line-bootloader#master")
+CPMAddPackage("gh:c4deszes/bike-uds-tool@0.1.0")
 
 # Test configuration
 enable_testing()
@@ -29,9 +30,13 @@ include(GoogleTest)
 
 line_codegen(
     TARGET protocol-stack-api
-    NETWORK ../customer/network.json
-    NODE FrontLight
+    CONFIG tools/line/codegen.json
     ADAPTER
+)
+
+uds_codegen(
+    TARGET uds-lib
+    PROFILE ../customer/uds/front_light.json
 )
 
 samx21_hal(samc21-hal ATSAMC21E18A)
@@ -60,8 +65,9 @@ add_executable(
 target_include_directories(application PRIVATE include)
 target_link_libraries(application PRIVATE   cmsis
                                             samc21-hal
-                                            flash-line-api flash-line-sources
+                                            #flash-line-api flash-line-sources
                                             protocol-stack-api
+                                            #uds-lib
                                             # bootloader-api)
 )
 set_target_properties(application PROPERTIES SUFFIX ".elf")
