@@ -1,48 +1,84 @@
-#include "bsp/board.h"
-//#include "hal/wdt.h"
-#include "hal/nvic.h"
-#include "hal/tcc.h"
+#include "app/init.h"
 
+// Hardware abstraction layer
+#include "hal/adc.h"
+#include "hal/wdt.h"
+#include "hal/nvic.h"
+#include "hal/nvmctrl.h"
+#include "hal/tcc.h"
+#include "hal/systick.h"
 #include "common/scheduler.h"
 
+// Board support package
+#include "bsp/board.h"
 #include "bsp/light_control.h"
+#include "bsp/line_usart.h"
+#include "bsp/tt_adc.h"
 
-#include "app/comm.h"
-#include "app/strobe.h"
+#include "app/feature.h"
 #include "app/brightness.h"
-#include "app/sys_state.h"
-#include "app/tmon.h"
 #include "app/button.h"
+#include "app/comm.h"
+#include "app/config.h"
+#include "app/calib.h"
+#include "app/current.h"
+#include "app/diag.h"
+#include "app/router.h"
+#include "app/strobe.h"
+#include "app/sys_state.h"
+#include "app/temp.h"
+#include "app/volt.h"
+#include "app/wake.h"
 
-#include <stddef.h>
-
-void APP_Initialize() {
+void APP_Init() {
     // Low level init
-    BSP_ClockInitialize();
+    NVMCTRL_SetAutoPageWrite(false);
+    NVMCTRL_SetReadWaitStates(0);
+
+    // TODO: enable watchdog
     //WDT_InitializeNormal(&wdt_config);
-    //EIC_Initialize(NULL);
+
+    WAKE_Init();
+
+    BSP_ClockInitialize();
+    ADC_SetupSingleShot();
+    TTADC_Init();
+
     LIGHTCONTROL_Init();
-    BUTTON_Init();
+
+    // Initializing communication
+    LINE_USART_Init();
+    COMM_Init();
+    DIAG_Init();
+
+#if FEATURE_CONFIG_LOAD_AT_STARTUP == 1
+    /* This call needs to happen after UDS_Init */
+    CONFIG_LoadNvram();
+#endif
+    CONFIG_Reload();
+
+    CALIB_Init();
 
     // Initializing application services
     SYSSTATE_Init();
+
+    CURRENT_Init();
+    VOLT_Init();
+    TEMP_Init();
+
+    BUTTON_Init();
     BRIGHTNESS_Init();
     STROBE_Init();
-
-    TMON_Init();
-
-    // Initializing communication
-    COMM_Initialize();
+    ROUTER_Init();
 
     // Setting up scheduler
     SCH_Init();
-    TCC_Reset(TCC0);
-    TCC_SetupTrigger(TCC0, 1000);   // 1000us period
-    TCC_Enable(TCC0);
+    // TODO: replace with BSP function to get actual CPU frequency
+    SYSTICK_Setup(48000000u / 1000u);
 
     NVIC_Initialize();
 }
 
-void TCC0_Interrupt(void) {
+void SysTick_Handler(void) {
     SCH_Trigger();
 }

@@ -1,176 +1,168 @@
 #include "app/comm.h"
-#include "bsp/usart.h"
 
-#include "line_protocol.h"
-#include "line_api.h"
-//#include "flash_line_api.h"
-//#include "flash_line_diag.h"
-//#include "bl/api.h"
-//#include "hal/dsu.h"
+// Hardware abstraction layer
+#include "common/swtimer.h"
+
+// Board support package
 #include "bsp/light_control.h"
 
-#include "app/tmon.h"
-#include "app/config.h"
+// Communication protocol
+#include "line_protocol.h"
+#include "line_api.h"
+#include "flash_line_api.h"
+#include "flash_line_diag.h"
+#include "uds_gen.h"
+
+// Application components
+#include "app/feature.h"
+#include "app/temp.h"
+#include "app/current.h"
+#include "app/brightness.h"
+#include "app/strobe.h"
 #include "app/button.h"
 
-#include "common/swtimer.h"
-#include "common/ringbuffer.h"
+static swtimer_t* COMM_LightRequestTimer;
+static swtimer_t* COMM_SpeedStatusTimer;
 
-RINGBUFFER_8(COMM_UsartBufferTx, 128);
-RINGBUFFER_8(COMM_UsartBufferRx, 128);
+static bool COMM_FrontLightSettingReceivedOnce;
 
-// TODO: data should be dynamic based on actual current figures 
-static LINE_Diag_PowerStatus_t power_status = {
-    .U_measured = LINE_DIAG_POWER_STATUS_VOLTAGE(12000),
-    .I_operating = LINE_DIAG_POWER_STATUS_OP_CURRENT(100),
-    .I_sleep = LINE_DIAG_POWER_STATUS_SLEEP_CURRENT(100)
-};
-
-// TODO: data should be dynamic based CMake config (copy from samd21-line-bootloader)
-static LINE_Diag_SoftwareVersion_t sw_version = {
-    .major = 0,
-    .minor = 1,
-    .patch = 0
-};
-
-static swtimer_t* comm_lightrequest_timer;
-
-// TODO: support op. mode (error in case all drivers fail, warning if IMU or single segment fails)
-uint8_t LINE_Diag_BicycleNetwork_FrontLight_GetOperationStatus(void) {
-    return LINE_DIAG_OP_STATUS_OK;
-}
-
-LINE_Diag_PowerStatus_t* LINE_Diag_BicycleNetwork_FrontLight_GetPowerStatus(void) {
-    return &power_status;
-}
-
-uint32_t LINE_Diag_BicycleNetwork_FrontLight_GetSerialNumber(void) {
-    //return DSU_GetSerialNumber32();
-    return 0xABCDEF01;
-}
-
-LINE_Diag_SoftwareVersion_t* LINE_Diag_BicycleNetwork_FrontLight_GetSoftwareVersion(void) {
-    return &sw_version;
-}
-
-void LINE_Diag_BicycleNetwork_FrontLight_OnWakeup(void) {
-    // nothing to do
-}
-
-void LINE_Diag_BicycleNetwork_FrontLight_OnIdle(void) {
-    // nothing to do
-}
-
-void LINE_Diag_BicycleNetwork_FrontLight_OnShutdown(void) {
-    // nothing to do
-}
-
-void LINE_Diag_BicycleNetwork_FrontLight_OnConditionalChangeAddress(uint8_t old_address, uint8_t new_address) {
-    // nothing to do
-}
-
-void COMM_Initialize(void) {
-    USART_Initialize(LINE_NETWORK_BicycleNetwork_BAUDRATE, &COMM_UsartBufferTx, &COMM_UsartBufferRx);
-    USART_Enable();
-
-    //LINE_Transport_Init(true);
+void COMM_Init(void) {
     LINE_App_Init();
-    //LINE_Diag_Init();
-    //LINE_Diag_SetAddress(LINE_NODE_FrontLight_DIAG_ADDRESS);
-    //FLASH_LINE_Init(FLASH_LINE_APPLICATION_MODE);
+    UDS_Init();
+    FLASH_LINE_Init(LD_FrontLight_CHANNEL, FLASH_LINE_APPLICATION_MODE);
 
-    comm_lightrequest_timer = SWTIMER_Create();
+    COMM_LightRequestTimer = SWTIMER_Create();
+    COMM_SpeedStatusTimer = SWTIMER_Create();
+
+    COMM_FrontLightSettingReceivedOnce = false;
+
+#if FEATURE_COMM_ENABLE_DEBUG_SIGNALS == 0
+    l_FrontLightTemperatureDebug.enabled = false;
+#endif
 }
 
-void COMM_UpdatePhy(void) {
-    uint8_t length = USART_Available();
-    while (length > 0) {
-        uint8_t data = USART_Read();
-        LINE_Transport_Receive(0, data);
-        length--;
+void COMM_Update10ms(void) {
+    if (l_flg_tst_LightSynchronization()) {
+        l_flg_clr_LightSynchronization();
+        SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 
-    LINE_Transport_Update(0, 1);
+    if (l_flg_tst_FrontLightSetting()) {
+        l_flg_clr_FrontLightSetting();
 
-    if (LINE_Request_LightSynchronization_flag() || LINE_Request_FrontLightSetting_flag()) {
-        SWTIMER_Setup(comm_lightrequest_timer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
+        if (!COMM_FrontLightSettingReceivedOnce) {
+            COMM_FrontLightSettingReceivedOnce = true;
+        }
+
+        SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
-}
 
-void LINE_Transport_WriteResponse(uint8_t channel, uint8_t size, uint8_t* payload, uint8_t checksum) {
-    uint8_t fix = 69;
-    USART_WriteData(&size, sizeof(uint8_t));
-    // TODO: fix for skipped 3rd byte
-    USART_WriteData(payload, 1);
-    USART_WriteData(&fix, 1);
-    USART_WriteData(payload+1, size-1);
-    USART_WriteData(&checksum, sizeof(uint8_t));
-    USART_FlushOutput();
-}
-
-void LINE_Transport_WriteRequest(uint8_t channel, uint16_t request) {
-    return;
-}
-
-static bool comm_bootrequest = false;
-
-// uint8_t FLASH_BL_EnterBoot(void) {
-
-//     // TODO: when do we reject boot entry requests?
-//     //comm_bootrequest = true;
-
-//     return FLASH_LINE_BOOT_ENTRY_NO_BL_PRESENT;
-// }
-
-bool COMM_BootRequest(void) {
-    return comm_bootrequest;
+    if (l_flg_tst_SpeedStatus()) {
+        l_flg_clr_SpeedStatus();
+        SWTIMER_Setup(COMM_SpeedStatusTimer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
+    }
 }
 
 uint16_t COMM_GetTargetBrightness(void) {
-    return LINE_Request_LightSynchronization_data.fields.TargetBrightness * 10U;
+    uint16_t target = l_rd_LightSynchronization_TargetBrightness() * 10U;
+
+    /* Limit the target brightness */
+    if (target >= LIGHTCONTROL_BRIGHTNESS_MAX) {
+        target = LIGHTCONTROL_BRIGHTNESS_MAX;
+    }
+
+    return target;
+}
+
+brightness_mode_t COMM_LightMode(void) {
+    uint8_t light_mode = l_rd_LightSynchronization_LightMode();
+    if (light_mode == L_LightModeEncoder_Adaptive) {
+        return brightness_mode_adaptive;
+    }
+    else if (light_mode == L_LightModeEncoder_Standard) {
+        return brightness_mode_standard;
+    }
+    else if (light_mode == L_LightModeEncoder_Emergency) {
+        return brightness_mode_emergency;
+    }
+    else if (light_mode == L_LightModeEncoder_Off) {
+        return brightness_mode_off;
+    }
+    return brightness_mode_safety;
+}
+
+strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source_t primary_source) {
+    uint8_t behavior = l_rd_FrontLightSetting_Behavior();
+    if (behavior == L_LightBehaviorEncoder_Default) {
+        return default_source;
+    }
+    else if (behavior == L_LightBehaviorEncoder_Blink) {
+        return primary_source;
+    }
+    return strobe_source_disabled;
 }
 
 bool COMM_LightRequestTimeout(void) {
-    return SWTIMER_Elapsed(comm_lightrequest_timer);
+    return SWTIMER_Elapsed(COMM_LightRequestTimer);
 }
 
-uint8_t COMM_LightMode(void) {
-    return LINE_Request_LightSynchronization_data.fields.LightMode;
+bool COMM_SpeedStatusTimeout(void) {
+    return SWTIMER_Elapsed(COMM_SpeedStatusTimer);
 }
 
-uint8_t COMM_LightBehavior(void) {
-    return LINE_Request_FrontLightSetting_data.fields.Behavior;
+bool COMM_SpeedValid(void) {
+    uint8_t speed_state = l_rd_SpeedStatus_SpeedState();
+    return (speed_state == L_SpeedStateEncoder_Ok || speed_state == L_SpeedStateEncoder_SlowResponse);
+}
+
+uint16_t COMM_GetSpeed(void) {
+    return l_rd_SpeedStatus_Speed();
 }
 
 static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
-    if (state == lightcontrol_feature_state_off) {
-        return LINE_ENCODER_LightStatusEncoder_Off;
-    }
-    else if (state == lightcontrol_feature_state_ok) {
-        return LINE_ENCODER_LightStatusEncoder_Ok;
+    if (state == lightcontrol_feature_state_ok) {
+        return L_LightStatusEncoder_Ok;
     }
     else if(state == lightcontrol_feature_state_partial_error) {
-        return LINE_ENCODER_LightStatusEncoder_PartialError;
+        return L_LightStatusEncoder_PartialError;
     }
     else if(state == lightcontrol_feature_state_error) {
-        return LINE_ENCODER_LightStatusEncoder_Error;
+        return L_LightStatusEncoder_Error;
     }
-    else {
-        return LINE_ENCODER_LightStatusEncoder_Error;
+    return L_LightStatusEncoder_Error;
+}
+
+static uint8_t COMM_EncodeThermalStatus(temp_status_t status) {
+    if (status == temp_status_not_measured) {
+        return L_ThermalStatusEncoder_NotMeasured;
     }
+    else if (CURRENT_ThermalShutdownActive()) {
+        return L_ThermalStatusEncoder_Shutdown;
+    }
+    else if (CURRENT_ThermalDeratingActive()) {
+        return L_ThermalStatusEncoder_Derating;
+    }
+    return L_ThermalStatusEncoder_Ok;
 }
 
 void COMM_UpdateSignals(void) {
-    LINE_Request_FrontLightStatus_data.fields.ControlCycleCount = BUTTON_CycleCounter;
+    /* Tail light state equals the diagnostic state if there were errors */
+    lightcontrol_feature_state_t main_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_main);
+    uint8_t main_status = COMM_EncodeLightStatus(main_state);
+    l_wr_FrontLightStatus_MainBeamStatus(main_status);
 
-    // TODO: check errors in LightController, report off if disabled
-    lightcontrol_feature_state_t mainbeam = LIGHTCONTROL_GetMainBeamState();
-    LINE_Request_FrontLightStatus_data.fields.MainBeamStatus = COMM_EncodeLightStatus(mainbeam);
-    LINE_Request_FrontLightStatus_data.fields.ThermalStatus = LINE_ENCODER_ThermalStatusEncoder_NotMeasured;
+    temp_status_t thermal_status = TEMP_GetStatus();
+    uint8_t encoded_thermal_status = COMM_EncodeThermalStatus(thermal_status);
+    l_wr_FrontLightStatus_ThermalStatus(encoded_thermal_status);
+
+    uint8_t control_cycle_count = BUTTON_CycleCounter;
+    l_wr_FrontLightStatus_ControlCycleCount(control_cycle_count);
 }
 
+
 void COMM_UpdateDebugSignals(void) {
-    // TODO: measure MCU temp. and return accordingly
-    LINE_Request_FrontLightTemperatureDebug_data.fields.DriveTemperature = LINE_ENCODER_TemperatureEncoder_Encode(TMON_DriveTemperature);
-    LINE_Request_FrontLightTemperatureDebug_data.fields.McuTemperature = LINE_ENCODER_TemperatureEncoder_Encode(25);
+    uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
+    uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
+    l_wr_FrontLightTemperatureDebug_McuTemperature(mcu_temp);
+    l_wr_FrontLightTemperatureDebug_DriveTemperature(drive_temp);
 }

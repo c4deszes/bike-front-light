@@ -13,19 +13,29 @@ typedef enum {
     lightcontrol_feature_state_error
 } lightcontrol_feature_state_t;
 
+typedef enum {
+    lightcontrol_segment_main
+} lightcontrol_segment_t;
+
+typedef enum {
+    lightcontrol_drive_mode_linear,
+    lightcontrol_drive_mode_buck
+} lightcontrol_drive_mode_t;
+
 void LIGHTCONTROL_Init(void);
 
 void LIGHTCONTROL_Update10ms(void);
 
 /**
- * @brief Sets the brightness of the given feature, the brightness `LIGHTCONTROL_BRIGHTNESS_MIN` is
- *        equivalent to the feature being off, the value `LIGHTCONTROL_BRIGHTNESS_MAX` being the
- *        maximum brightness and anything in between is mapped 
- * 
- * @param brightness 
+ * @brief Set the brightness of a light segment.
+ * @param segment The light segment to set the brightness for.
+ * @param brightness The brightness value to set (0 to 1000).
+ * @note The brightness value is scaled to the range supported by the hardware.
  */
-void LIGHTCONTROL_SetBrightness(uint16_t brightness);
+void LIGHTCONTROL_SetBrightness(lightcontrol_segment_t segment, uint16_t brightness);
 
-lightcontrol_feature_state_t LIGHTCONTROL_GetMainBeamState(void);
+lightcontrol_drive_mode_t LIGHTCONTROL_GetDriveMode(lightcontrol_segment_t segment);
+
+lightcontrol_feature_state_t LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_t segment);
 
 #endif // BSP_LIGHT_CONTROL_H_

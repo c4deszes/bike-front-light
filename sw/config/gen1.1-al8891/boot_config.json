@@ -1,0 +1,8 @@
+{
+    "baudrate": 19200,
+    "oneWire": true,
+    "txPin": "PA16",
+    "rxPin": "PA17",
+    "csPin": "PA15",
+    "txePin": null
+}

@@ -1,0 +1,108 @@
+#include "app/calib.h"
+#include "app/calib_priv.h"
+
+#include "app/feature.h"
+
+#include "bsp/volt_cfg.h"
+#include "app/volt.h"
+
+#include "hal/dsu.h"
+#include "hal/nvmctrl.h"
+
+static calib_layout_generic_t* CALIB_Memory = (calib_layout_generic_t*)CALIB_FLASH_ADDRESS;
+uint32_t CALIB_CalculatedCrc;
+
+static struct {
+    bool CrcInvalid : 1;
+    bool VersionInvalid : 1;
+    bool VoltageCalibInvalid : 1;
+    uint8_t Reserved : 5;
+} CALIB_ErrorFlags;
+
+static bool CALIB_Changed;
+static uint16_t CALIB_VoltageSlopeCalib;
+static int16_t CALIB_VoltageOffsetCalib;
+
+static void CALIB_InitSafeDefaults(void) {
+    CALIB_VoltageSlopeCalib = VOLT_DEFAULT_CALIB_SLOPE;
+    CALIB_VoltageOffsetCalib = 0;
+}
+
+static void CALIB_LoadCalibration_v1(void) {
+    calib_layout_v1_t* mem = (calib_layout_v1_t*)CALIB_Memory;
+
+    // Voltage calibration validation
+    uint16_t temp_voltage_slope_calib = mem->Properties.Voltage_Slope_Calib;
+    int16_t temp_voltage_offset_calib = mem->Properties.Voltage_Slope_Offset;
+    
+    // TODO: validate offset
+    if (temp_voltage_slope_calib >= VOLT_CALIB_SLOPE_MIN && temp_voltage_slope_calib <= VOLT_CALIB_SLOPE_MAX) {
+        CALIB_VoltageSlopeCalib = temp_voltage_slope_calib;
+        CALIB_VoltageOffsetCalib = temp_voltage_offset_calib;
+        CALIB_ErrorFlags.VoltageCalibInvalid = 0;
+    }
+    else {
+        CALIB_ErrorFlags.VoltageCalibInvalid = 1;
+    }
+}
+
+static void CALIB_LoadNvram(void) {
+    CALIB_CalculatedCrc = DSU_CalculateCRC32(DSU_CRC32_INITIAL,
+                                              (void*)CALIB_FLASH_ADDRESS,
+                                              CALIB_FLASH_SIZE-sizeof(uint32_t));
+
+    if (CALIB_CalculatedCrc == CALIB_Memory->Crc32) {
+        if (CALIB_Memory->Version == 1) {
+            CALIB_LoadCalibration_v1();
+        }
+        else {
+            /* Unknown version - could implement fallback or default loading behavior here */
+            CALIB_ErrorFlags.VersionInvalid = 1;
+        }
+    }
+    else {
+        /* CRC is invalid */
+        CALIB_ErrorFlags.CrcInvalid = 1;
+    }
+}
+
+void CALIB_Init(void) {
+    CALIB_InitSafeDefaults();
+
+#if FEATURE_CALIB_LOAD_AT_STARTUP == 1
+    CALIB_LoadNvram();
+#endif
+}
+
+void CALIB_Save(void) {
+    if (CALIB_Changed) {
+        calib_layout_v1_t mem;
+        mem.Version = 1;
+        mem.Properties.Voltage_Slope_Calib = CALIB_VoltageSlopeCalib;
+        mem.Properties.Voltage_Slope_Offset = CALIB_VoltageOffsetCalib;
+
+        for (uint8_t i = 0; i < sizeof(mem.Padding); i++) {
+            mem.Padding[i] = 0xFF;
+        }
+        mem.Crc32 = DSU_SoftwareCRC32(DSU_CRC32_INITIAL, (void*)(&mem), sizeof(calib_layout_v1_t)-sizeof(uint32_t));
+
+        NVMCTRL_EraseRow(CALIB_FLASH_ADDRESS);
+        NVMCTRL_WritePages(CALIB_FLASH_ADDRESS, (uint8_t*)(&mem), CALIB_FLASH_SIZE / 64u);
+    }
+}
+
+bool CALIB_GetVoltageCalib(uint16_t* slope_calib, int16_t* offset_calib)
+{
+    // TODO: validate pointers
+    *slope_calib = CALIB_VoltageSlopeCalib;
+    *offset_calib = CALIB_VoltageOffsetCalib;
+    return true;
+}
+
+bool CALIB_SetVoltageCalib(uint16_t slope_calib, int16_t offset_calib) {
+    // TODO: validate calib values
+    CALIB_VoltageSlopeCalib = slope_calib;
+    CALIB_VoltageOffsetCalib = offset_calib;
+    CALIB_Changed = true;
+    return true;
+}

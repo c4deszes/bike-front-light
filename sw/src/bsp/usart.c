@@ -3,25 +3,15 @@
 
 #include "bsp/usart.h"
 
-static const gpio_pin_input_configuration input = {
-    .pull = FLOATING,
-    .sample = CONTINUOUS
-};
-
-static const gpio_pin_output_configuration output = {
-    .drive = NORMAL,
-    .input = ONDEMAND
-};
-
-void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t* rx_buffer) {
+void USART_Init(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t* rx_buffer) {
     GPIO_EnableFunction(UART_TX_PORT, UART_TX_PIN, UART_TX_PINMUX);
     GPIO_EnableFunction(UART_RX_PORT, UART_RX_PIN, UART_RX_PINMUX);
 
-    GPIO_SetupPinOutput(UART_CS_PORT, UART_CS_PIN, &output);
+    GPIO_SetupPinOutput(UART_CS_PORT, UART_CS_PIN, &GPIO_OUTPUT_DEFAULT_CONFIG);
     GPIO_PinWrite(UART_CS_PORT, UART_CS_PIN, HIGH);
 
     SERCOM_USART_SetupAsync(
-        SERCOM3,
+        UART_SERCOM_INSTANCE,
         8000000u,
         baudrate,
         UART_TX_PAD,
@@ -31,28 +21,34 @@ void USART_Initialize(uint32_t baudrate, ringbuffer8_t* tx_buffer, ringbuffer8_t
     );
 }
 
-// TODO: function to deep sleep (LIN CS pin low)
-
 void USART_Enable(void) {
-    SERCOM_USART_Enable(SERCOM3);
+    SERCOM_USART_Enable(UART_SERCOM_INSTANCE);
 }
 
 void USART_WriteData(uint8_t* data, const uint8_t size) {
-    SERCOM_USART_WriteData(SERCOM3, data, size);
+    SERCOM_USART_WriteData(UART_SERCOM_INSTANCE, data, size);
 }
 
 uint16_t USART_Available(void) {
-    return SERCOM_USART_Available(SERCOM3);
+    return SERCOM_USART_Available(UART_SERCOM_INSTANCE);
 }
 
 uint8_t USART_Read(void) {
-    return SERCOM_USART_Read(SERCOM3);
+    return SERCOM_USART_Read(UART_SERCOM_INSTANCE);
 }
 
 void USART_FlushOutput(void) {
-    SERCOM_USART_FlushOutput(SERCOM3);
+    SERCOM_USART_FlushOutput(UART_SERCOM_INSTANCE);
 }
 
-void SERCOM3_Interrupt(void) {
-    SERCOM_USART_InterruptHandler(SERCOM3);
+void USART_GoToSleep(void) {
+    GPIO_PinWrite(UART_CS_PORT, UART_CS_PIN, LOW);
 }
+
+#if UART_SERCOM_INSTANCE == SERCOM1
+void SERCOM1_Interrupt(void) {
+    SERCOM_USART_InterruptHandler(UART_SERCOM_INSTANCE);
+}
+#else
+#error "Unhandled SERCOM instance for USART"
+#endif

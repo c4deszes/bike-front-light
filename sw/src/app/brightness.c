@@ -1,104 +1,185 @@
 #include "app/brightness.h"
-#include "app/config.h"
 
+// Board support package
 #include "bsp/light_control.h"
 
-static brightness_mode_t brightness_mode;
-static uint16_t brightness_target;
-static bool brightness_brake;
-static bool brightness_strobe;
+// Application components
+#include "app/config.h"
+#include "app/calib.h"
+#include "app/feature.h"
+#include "app/current.h"
+
+static brightness_mode_t BRIGHTNESS_Mode;
+static uint16_t BRIGHTNESS_Target;
+static bool BRIGHTNESS_Strobe;
+
+static uint16_t BRIGHTNESS_MainOutput;
+
+static uint16_t BRIGHTNESS_ConfCutoffX;
+static uint16_t BRIGHTNESS_ConfCutoffY;
+static uint16_t BRIGHTNESS_ConfMaxX;
+static uint16_t BRIGHTNESS_ConfMaxY;
+static uint16_t BRIGHTNESS_ConfLevelStandard;
+static uint16_t BRIGHTNESS_ConfLevelEmergency;
+static uint16_t BRIGHTNESS_ConfLevelSafety;
+static uint16_t BRIGHTNESS_ConfStrobeLow;
+static uint16_t BRIGHTNESS_ConfStrobeHigh;
+
+void BRIGHTNESS_LoadConfig(void) {
+    BRIGHTNESS_ConfCutoffX = CONFIG_Props.BrightnessCurve_Cutoff_X;
+    BRIGHTNESS_ConfCutoffY = CONFIG_Props.BrightnessCurve_Cutoff_Y;
+    BRIGHTNESS_ConfMaxX = CONFIG_Props.BrightnessCurve_Max_X;
+    BRIGHTNESS_ConfMaxY = CONFIG_Props.BrightnessCurve_Max_Y;
+    BRIGHTNESS_ConfLevelStandard = CONFIG_Props.Brightness_LevelStandard;
+    BRIGHTNESS_ConfLevelEmergency = CONFIG_Props.Brightness_LevelEmergency;
+    BRIGHTNESS_ConfLevelSafety = CONFIG_Props.Brightness_LevelSafety;
+    BRIGHTNESS_ConfStrobeLow = CONFIG_Props.Strobe_LevelLow;
+    BRIGHTNESS_ConfStrobeHigh = CONFIG_Props.Strobe_LevelHigh;
+}
 
 void BRIGHTNESS_Init(void) {
-    brightness_mode = brightness_mode_off;
-    brightness_target = 0;
-    brightness_brake = false;
-    brightness_strobe = true;
+    BRIGHTNESS_Mode = brightness_mode_max;
+    BRIGHTNESS_Target = LIGHTCONTROL_BRIGHTNESS_MAX;
+    BRIGHTNESS_Strobe = true;
+
+    BRIGHTNESS_MainOutput = LIGHTCONTROL_BRIGHTNESS_MIN;
+
+    BRIGHTNESS_LoadConfig();
+}
+
+static uint16_t BRIGHTNESS_MapStrobe(uint16_t target) {
+    if (target <= BRIGHTNESS_ConfCutoffX) {
+        return BRIGHTNESS_ConfStrobeLow;
+    }
+    else if (target >= BRIGHTNESS_ConfMaxX) {
+        return BRIGHTNESS_ConfStrobeHigh;
+    }
+    else {
+        return (target - BRIGHTNESS_ConfCutoffX) * (BRIGHTNESS_ConfStrobeHigh - BRIGHTNESS_ConfStrobeLow) /
+               (BRIGHTNESS_ConfMaxX - BRIGHTNESS_ConfCutoffX) + BRIGHTNESS_ConfStrobeLow;
+    }
 }
 
 static uint16_t BRIGHTNESS_MapTargetAdaptive(uint16_t target) {
-    if (target < CONFIG_BRIGHTNESS_CURVE_CUTOFF_X) {
+    if (target < BRIGHTNESS_ConfCutoffX) {
         return LIGHTCONTROL_BRIGHTNESS_MIN;
     }
-    else if (target >= CONFIG_BRIGHTNESS_CURVE_MAX_X) {
-        return CONFIG_BRIGHTNESS_CURVE_MAX_Y;
+    else if (target >= BRIGHTNESS_ConfMaxX) {
+        return BRIGHTNESS_ConfMaxY;
     }
     else {
-        return (target - CONFIG_BRIGHTNESS_CURVE_CUTOFF_X) * (CONFIG_BRIGHTNESS_CURVE_MAX_Y - CONFIG_BRIGHTNESS_CURVE_CUTOFF_Y) /
-               (CONFIG_BRIGHTNESS_CURVE_MAX_X - CONFIG_BRIGHTNESS_CURVE_CUTOFF_X) + CONFIG_BRIGHTNESS_CURVE_CUTOFF_Y;
+        return (target - BRIGHTNESS_ConfCutoffX) * (BRIGHTNESS_ConfMaxY - BRIGHTNESS_ConfCutoffY) /
+               (BRIGHTNESS_ConfMaxX - BRIGHTNESS_ConfCutoffX) + BRIGHTNESS_ConfCutoffY;
     }
+}
+
+void BRIGHTNESS_OffMode(uint16_t* main_target) {
+    uint16_t target = LIGHTCONTROL_BRIGHTNESS_MIN;
+
+    *main_target = target;
+}
+
+void BRIGHTNESS_NormalMode(uint16_t* main_target) {
+    uint16_t temp_main = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_Target);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_Target);
+
+    /* In standard mode the rear light is in daylight running mode */
+    if ((BRIGHTNESS_Mode == brightness_mode_standard) && temp_main < BRIGHTNESS_ConfLevelStandard) {
+        temp_main = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    if (!BRIGHTNESS_Strobe) {
+        temp_main = temp_strobe;
+    }
+    *main_target = temp_main;
+}
+
+void BRIGHTNESS_EmergencyMode(uint16_t* main_target) {
+    uint16_t temp_main = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_ConfLevelEmergency);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_ConfLevelEmergency);
+
+    if (temp_main < BRIGHTNESS_ConfLevelStandard) {
+        temp_main = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    if (!BRIGHTNESS_Strobe) {
+        temp_main = temp_strobe;
+    }
+
+    *main_target = temp_main;
+}
+
+void BRIGHTNESS_SafetyMode(uint16_t* main_target) {
+    uint16_t temp_main = BRIGHTNESS_MapTargetAdaptive(BRIGHTNESS_ConfLevelSafety);
+    uint16_t temp_strobe = BRIGHTNESS_MapStrobe(BRIGHTNESS_ConfLevelSafety);
+
+    if (temp_main < BRIGHTNESS_ConfLevelStandard) {
+        temp_main = BRIGHTNESS_ConfLevelStandard;
+    }
+
+    if (!BRIGHTNESS_Strobe) {
+        temp_main = temp_strobe;
+    }
+
+    *main_target = temp_main;
+}
+
+void BRIGHTNESS_MaxMode(uint16_t* main_target) {
+    *main_target = LIGHTCONTROL_BRIGHTNESS_MAX;
 }
 
 void BRIGHTNESS_Update10ms(void) {
-    if (brightness_mode == brightness_mode_off) {
-        /* And tail light is disabled as well */
-        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MIN);
+
+    uint16_t temp_main;
+
+    if (BRIGHTNESS_Mode == brightness_mode_off) {
+        BRIGHTNESS_OffMode(&temp_main);
     }
-    else if (brightness_mode == brightness_mode_standard || brightness_mode == brightness_mode_adaptive) {
-        uint16_t tail_target = BRIGHTNESS_MapTargetAdaptive(brightness_target);
-
-        /* In standard mode the rear light is in daylight running mode */
-        if ((brightness_mode == brightness_mode_standard || brightness_brake) && tail_target < CONFIG_BRIGHTNESS_STANDARD_MIN_LEVEL) {
-            tail_target = CONFIG_BRIGHTNESS_STANDARD_MIN_LEVEL;
-        }
-
-            // TODO: when blinking the output should be coordinated so that the blinking resumes only well after braking stopped
-        if (brightness_strobe) {
-            tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
-        }
-        else {
-            if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
-                tail_target = 0;
-            }
-            else {
-                tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
-            }
-        }
-
-        LIGHTCONTROL_SetBrightness(tail_target);
+    else if (BRIGHTNESS_Mode == brightness_mode_standard || BRIGHTNESS_Mode == brightness_mode_adaptive) {
+        BRIGHTNESS_NormalMode(&temp_main);
     }
-    else if (brightness_mode == brightness_mode_emergency) {
-        /* And tail light is set to emergency brightness */
-        LIGHTCONTROL_SetBrightness(CONFIG_BRIGHTNESS_EMERGENCY_LEVEL);
+    else if (BRIGHTNESS_Mode == brightness_mode_emergency) {
+        BRIGHTNESS_EmergencyMode(&temp_main);
     }
-    else if (brightness_mode == brightness_mode_safety) {
-        uint16_t tail_target = CONFIG_BRIGHTNESS_SAFETY_LEVEL;
-
-        if (brightness_strobe) {
-            tail_target += CONFIG_BRIGHTNESS_STROBE_HIGH_OFFSET;
-        }
-        else {
-            if (tail_target < CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET) {
-                tail_target = 0;
-            }
-            else {
-                tail_target -= CONFIG_BRIGHTNESS_STROBE_LOW_OFFSET;
-            }
-        }
-
-        LIGHTCONTROL_SetBrightness(tail_target);
+    else if (BRIGHTNESS_Mode == brightness_mode_safety) {
+        BRIGHTNESS_SafetyMode(&temp_main);
     }
-    else if (brightness_mode == brightness_mode_max) {
-        /* In max mode all segments are set to their hardware default level */
-        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MAX);
+    else if (BRIGHTNESS_Mode == brightness_mode_max) {
+        /* In max mode tail segments is set to maximum brightness, brake light is disabled */
+        BRIGHTNESS_MaxMode(&temp_main);
     }
     else {
         // Control should never reach this scenario
-        LIGHTCONTROL_SetBrightness(LIGHTCONTROL_BRIGHTNESS_MAX);
+        BRIGHTNESS_MaxMode(&temp_main);
     }
+
+    // Calibrate
+    // TODO: implement
+
+    // Derate final output
+    uint16_t derating_factor = CURRENT_GetDeratingFactor();
+
+    BRIGHTNESS_MainOutput = ((uint32_t)temp_main * derating_factor) / CURRENT_DERATING_NONE;
 }
 
 void BRIGHTNESS_SetMode(brightness_mode_t mode) {
-    brightness_mode = mode;
+    BRIGHTNESS_Mode = mode;
 }
 
 void BRIGHTNESS_SetTarget(uint16_t target) {
-    brightness_target = target;
+    BRIGHTNESS_Target = target;
 }
 
-void BRIGHTNESS_SetBraking(bool brake) {
-    brightness_brake = brake;
+void BRIGHTNESS_SetStrobe(bool strobe) {
+    BRIGHTNESS_Strobe = strobe;
 }
 
-void BRIGHTNESS_Strobe(bool strobe) {
-    brightness_strobe = strobe;
+uint16_t BRIGHTNESS_GetOutput(brightness_output_t output)
+{
+    switch (output) {
+        case brightness_output_main:
+            return BRIGHTNESS_MainOutput;
+        default:
+            return LIGHTCONTROL_BRIGHTNESS_MIN;
+    }
 }

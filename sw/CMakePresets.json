@@ -1,5 +1,5 @@
 {
-    "version": 2,
+    "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 20,
@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "armgcc-default",
+            "name": "conf-armgcc-default",
             "binaryDir": "${sourceDir}/_build/${presetName}",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/armgcc-toolchain.cmake"
@@ -15,101 +15,130 @@
             "hidden": true
         },
         {
-            "name": "armgcc-release-unix",
-            "inherits": "armgcc-default",
+            "name": "conf-build-gen1-tld509x",
+            "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "FRONT_LIGHT_BOARD_VARIANT": "gen1-tld509x"
             }
         },
         {
-            "name": "armgcc-release-mingw",
-            "inherits": "armgcc-default",
-            "generator": "MinGW Makefiles",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "armgcc-debug-unix",
-            "inherits": "armgcc-default",
+            "name": "conf-build-gen1-ild8150",
+            "inherits": "conf-armgcc-default",
             "generator": "Unix Makefiles",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "FRONT_LIGHT_BOARD_VARIANT": "gen1-ild8150"
             }
         },
         {
-            "name": "armgcc-debug-mingw",
-            "inherits": "armgcc-default",
-            "generator": "MinGW Makefiles",
+            "name": "conf-build-gen1.1-al8891",
+            "inherits": "conf-armgcc-default",
+            "generator": "Unix Makefiles",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "FRONT_LIGHT_BOARD_VARIANT": "gen1.1-al8891"
             }
         },
         {
-            "name": "mingw-default",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/_build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/mingw-toolchain.cmake"
-            },
-            "hidden": true
-        },
-        {
-            "name": "mingw-debug",
-            "inherits": [ "mingw-default" ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "gcc-default",
+            "name": "conf-gcc-default",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/_build/${presetName}",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/gcc-toolchain.cmake"
-            },
-            "hidden": true
-        },
-        {
-            "name": "gcc-debug",
-            "inherits": [ "gcc-default" ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/tools/cmake/gcc-toolchain.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "FRONT_LIGHT_BUILD_UNITTESTS": "OFF",
+                "FRONT_LIGHT_BUILD_SILTESTS": "ON",
+                "FRONT_LIGHT_BUILD_FUNCTESTS": "OFF",
+                "FRONT_LIGHT_BUILD_DOCS": "ON"
             }
-        },
-        {
-            "name": "ild8150",
-            "cacheVariables": {
-                "PROJECT_PROFILE": "ild8150"
-            },
-            "hidden": true
-        },
-        {
-            "name": "tld5099",
-            "cacheVariables": {
-                "PROJECT_PROFILE": "tld5099"
-            },
-            "hidden": true
         }
     ],
     "buildPresets": [
         {
-            "name": "build-app",
-            "targets": [ "application-full"],
+            "name": "build-app-targets",
+            "targets": [
+                "application-full"
+        ],
             "hidden": true
         },
         {
-            "name": "build-docs",
+            "name": "build-cov-targets",
+            "hidden": true,
+            "targets": [
+                "coverage_report"
+            ]
+        },
+        {
+            "name": "build-sil-targets",
+            "targets": [ "rear-light-server" ],
+            "hidden": true
+        },
+        {
+            "name": "build-docs-targets",
             "targets": [ "Sphinx" ],
             "hidden": true
         },
         {
-            "name": "build-app-unix",
-            "inherits": "build-app",
-            "configurePreset": "armgcc-release-unix"
+            "name": "build-app-gen1-tld509x",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-build-gen1-tld509x"
+        },
+        {
+            "name": "build-app-gen1-ild8150",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-build-gen1-ild8150"
+        },
+        {
+            "name": "build-app-gen1.1-al8891",
+            "inherits": "build-app-targets",
+            "configurePreset": "conf-build-gen1.1-al8891"
+        },
+        {
+            "name": "build-cov-gcc",
+            "inherits": "build-cov-targets",
+            "configurePreset": "conf-gcc-default"
+        },
+        {
+            "name": "build-sil-gcc",
+            "inherits": "build-sil-targets",
+            "configurePreset": "conf-gcc-default"
+        },
+        {
+            "name": "build-docs-gcc",
+            "inherits": "build-docs-targets",
+            "configurePreset": "conf-gcc-default"
         }
     ],
     "testPresets": [
+    ],
+    "workflowPresets": [
+        {
+            "name": "workflow-build-gen1-tld509x",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "conf-build-gen1-tld509x"
+                },
+                {
+                    "type": "build",
+                    "name": "build-app-gen1-tld509x"
+                }
+            ]
+        },
+        {
+            "name": "workflow-docs",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "conf-gcc-default"
+                },
+                {
+                    "type": "build",
+                    "name": "build-docs-gcc"
+                }
+            ]
+        }
     ]
 }

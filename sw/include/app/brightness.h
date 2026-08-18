@@ -13,13 +13,21 @@ typedef enum {
     brightness_mode_max
 } brightness_mode_t;
 
+typedef enum {
+    brightness_output_main
+} brightness_output_t;
+
 void BRIGHTNESS_Init(void);
+
+void BRIGHTNESS_LoadConfig(void);
 
 void BRIGHTNESS_SetMode(brightness_mode_t mode);
 
 void BRIGHTNESS_SetTarget(uint16_t target);
 
-void BRIGHTNESS_Strobe(bool strobe);
+void BRIGHTNESS_SetStrobe(bool strobe);
+
+uint16_t BRIGHTNESS_GetOutput(brightness_output_t output);
 
 void BRIGHTNESS_Update10ms(void);
 

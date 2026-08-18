@@ -1,10 +1,10 @@
-#include "sam.h"
+#include "app/button.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "bsp/pinout.h"
-#include "app/config.h"
+#include "app/feature.h"
 
 #include "hal/gpio.h"
 

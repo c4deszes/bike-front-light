@@ -1,0 +1,6 @@
+{
+    "FrontLight": {
+        "channel": 0,
+        "profile": "../../../customer/uds/front_light.json"
+    }
+}
