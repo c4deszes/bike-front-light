@@ -44,11 +44,6 @@ void COMM_Init(void) {
 void COMM_Update10ms(void) {
     if (l_flg_tst_LightSynchronization()) {
         l_flg_clr_LightSynchronization();
-        SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
-    }
-
-    if (l_flg_tst_FrontLightSetting()) {
-        l_flg_clr_FrontLightSetting();
 
         if (!COMM_FrontLightSettingReceivedOnce) {
             COMM_FrontLightSettingReceivedOnce = true;
@@ -57,10 +52,10 @@ void COMM_Update10ms(void) {
         SWTIMER_Setup(COMM_LightRequestTimer, FEATURE_COMM_LIGHTREQUEST_TIMEOUT);
     }
 
-    if (l_flg_tst_SpeedStatus()) {
-        l_flg_clr_SpeedStatus();
-        SWTIMER_Setup(COMM_SpeedStatusTimer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
-    }
+    // if (l_flg_tst_SpeedStatus()) {
+    //     l_flg_clr_SpeedStatus();
+    //     SWTIMER_Setup(COMM_SpeedStatusTimer, FEATURE_COMM_SPEEDSTATUS_TIMEOUT);
+    // }
 }
 
 uint16_t COMM_GetTargetBrightness(void) {
@@ -79,7 +74,7 @@ brightness_mode_t COMM_LightMode(void) {
     if (light_mode == L_LightModeEncoder_Adaptive) {
         return brightness_mode_adaptive;
     }
-    else if (light_mode == L_LightModeEncoder_Standard) {
+    else if (light_mode == L_LightModeEncoder_DLR) {
         return brightness_mode_standard;
     }
     else if (light_mode == L_LightModeEncoder_Emergency) {
@@ -92,9 +87,9 @@ brightness_mode_t COMM_LightMode(void) {
 }
 
 strobe_source_t COMM_LightBehavior(strobe_source_t default_source, strobe_source_t primary_source) {
-    uint8_t behavior = l_rd_FrontLightSetting_Behavior();
-    if (behavior == L_LightBehaviorEncoder_Default) {
-        return default_source;
+    uint8_t behavior = l_rd_LightSynchronization_FrontBehavior();
+    if (behavior == L_LightBehaviorEncoder_Solid) {
+        return strobe_source_disabled;
     }
     else if (behavior == L_LightBehaviorEncoder_Blink) {
         return primary_source;
@@ -106,63 +101,67 @@ bool COMM_LightRequestTimeout(void) {
     return SWTIMER_Elapsed(COMM_LightRequestTimer);
 }
 
-bool COMM_SpeedStatusTimeout(void) {
-    return SWTIMER_Elapsed(COMM_SpeedStatusTimer);
-}
+// bool COMM_SpeedStatusTimeout(void) {
+//     return SWTIMER_Elapsed(COMM_SpeedStatusTimer);
+// }
 
-bool COMM_SpeedValid(void) {
-    uint8_t speed_state = l_rd_SpeedStatus_SpeedState();
-    return (speed_state == L_SpeedStateEncoder_Ok || speed_state == L_SpeedStateEncoder_SlowResponse);
-}
+// bool COMM_SpeedValid(void) {
+//     uint8_t speed_state = l_rd_RideStatus_SpeedState();
+//     return (speed_state == L_SpeedStateEncoder_Ok || speed_state == L_SpeedStateEncoder_SlowResponse);
+// }
 
-uint16_t COMM_GetSpeed(void) {
-    return l_rd_SpeedStatus_Speed();
-}
+// uint16_t COMM_GetSpeed(void) {
+//     return l_rd_RideStatus_Speed();
+// }
 
-static uint8_t COMM_EncodeLightStatus(lightcontrol_feature_state_t state) {
+static uint8_t COMM_EncodeLightState(lightcontrol_feature_state_t state) {
     if (state == lightcontrol_feature_state_ok) {
-        return L_LightStatusEncoder_Ok;
+        return L_LightStateEncoder_Ok;
     }
     else if(state == lightcontrol_feature_state_partial_error) {
-        return L_LightStatusEncoder_PartialError;
+        return L_LightStateEncoder_PartialError;
     }
     else if(state == lightcontrol_feature_state_error) {
-        return L_LightStatusEncoder_Error;
+        return L_LightStateEncoder_Error;
     }
-    return L_LightStatusEncoder_Error;
+    return L_LightStateEncoder_Error;
 }
 
-static uint8_t COMM_EncodeThermalStatus(temp_status_t status) {
+static uint8_t COMM_EncodeThermalState(temp_status_t status) {
     if (status == temp_status_not_measured) {
-        return L_ThermalStatusEncoder_NotMeasured;
+        return L_ThermalStateEncoder_NotMeasured;
     }
     else if (CURRENT_ThermalShutdownActive()) {
-        return L_ThermalStatusEncoder_Shutdown;
+        return L_ThermalStateEncoder_Shutdown;
     }
     else if (CURRENT_ThermalDeratingActive()) {
-        return L_ThermalStatusEncoder_Derating;
+        return L_ThermalStateEncoder_Derating;
     }
-    return L_ThermalStatusEncoder_Ok;
+    return L_ThermalStateEncoder_Ok;
 }
 
 void COMM_UpdateSignals(void) {
     /* Tail light state equals the diagnostic state if there were errors */
     lightcontrol_feature_state_t main_state = LIGHTCONTROL_GetDiagnosticState(lightcontrol_segment_main);
-    uint8_t main_status = COMM_EncodeLightStatus(main_state);
-    l_wr_FrontLightStatus_MainBeamStatus(main_status);
+    uint8_t main_status = COMM_EncodeLightState(main_state);
+    l_wr_FrontLightStatus_MainLightState(main_status);
+    l_wr_FrontLightStatus_HighBeamState(L_LightStateEncoder_Off);
+    l_wr_FrontLightStatus_TurnSignalState(L_LightStateEncoder_Off);
 
     temp_status_t thermal_status = TEMP_GetStatus();
-    uint8_t encoded_thermal_status = COMM_EncodeThermalStatus(thermal_status);
-    l_wr_FrontLightStatus_ThermalStatus(encoded_thermal_status);
+    uint8_t encoded_thermal_status = COMM_EncodeThermalState(thermal_status);
+    l_wr_FrontLightStatus_ThermalState(encoded_thermal_status);
+
+    uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
+    uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
+    l_wr_FrontLightStatus_McuTemperature(mcu_temp);
+    l_wr_FrontLightStatus_DriveTemperature(drive_temp);
 
     uint8_t control_cycle_count = BUTTON_CycleCounter;
-    l_wr_FrontLightStatus_ControlCycleCount(control_cycle_count);
+    l_wr_FrontLightStatus_ModeSwitchCycles(control_cycle_count);
 }
 
 
 void COMM_UpdateDebugSignals(void) {
-    uint8_t drive_temp = L_TemperatureEncoder_Encode(TEMP_GetDriveTemperature());
-    uint8_t mcu_temp = L_TemperatureEncoder_Encode(TEMP_GetMcuTemperature());
-    l_wr_FrontLightTemperatureDebug_McuTemperature(mcu_temp);
-    l_wr_FrontLightTemperatureDebug_DriveTemperature(drive_temp);
+    // No debug signals to update in this implementation
 }

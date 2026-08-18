@@ -61,22 +61,23 @@ bool ROUTER_DiagRequest(brightness_output_t output, uint8_t mode, uint16_t brigh
         return false;
     }
 
-    if (
-        // Below 2.0 km/h diagnostics are allowed
-        (!COMM_SpeedStatusTimeout() && COMM_SpeedValid() && COMM_GetSpeed() < FEATURE_DIAG_DRIVER_CONTROL_MAX_SPEED) ||
-        // When there's no speed data they're allowed but only if the requested light mode is off
-        (COMM_SpeedStatusTimeout() && !COMM_LightRequestTimeout() && COMM_LightMode() == brightness_mode_off)
-    ) {
+    // TODO: disabled for now, will be re-enabled when speed data is available
+    // if (
+    //     // Below 2.0 km/h diagnostics are allowed
+    //     (!COMM_SpeedStatusTimeout() && COMM_SpeedValid() && COMM_GetSpeed() < FEATURE_DIAG_DRIVER_CONTROL_MAX_SPEED) ||
+    //     // When there's no speed data they're allowed but only if the requested light mode is off
+    //     (COMM_SpeedStatusTimeout() && !COMM_LightRequestTimeout() && COMM_LightMode() == brightness_mode_off)
+    // ) {
 
-        ROUTER_DiagRequests[output].active = true;
-        ROUTER_DiagRequests[output].activeTime = 0;
-        ROUTER_DiagRequests[output].mode = mode;
-        ROUTER_DiagRequests[output].brightness = brightness;
+    //     ROUTER_DiagRequests[output].active = true;
+    //     ROUTER_DiagRequests[output].activeTime = 0;
+    //     ROUTER_DiagRequests[output].mode = mode;
+    //     ROUTER_DiagRequests[output].brightness = brightness;
 
-        ROUTER_DiagRequestActive = true;
+    //     ROUTER_DiagRequestActive = true;
 
-        return true;
-    }
+    //     return true;
+    // }
     
     return false;
 }
